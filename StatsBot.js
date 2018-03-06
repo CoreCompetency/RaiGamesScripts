@@ -15,14 +15,14 @@
     - !help:           Provides a link to this script in github for review of these comments.
     - !helpline:       Provides information about the National Problem Gambling Helpline.
     - !donate
-      !tip:               Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+      !tip:            Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     
     The following commands can be called by the account running this script:
     - !stop:           This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
-    - !seednyan N:       If the script has not seen a nyan yet, you can manually seed the nyan game identifier (N) using this command.
-    - !getnyan:           Returns the game identifier of the last nyan.
+    - !seednyan N:     If the script has not seen a nyan yet, you can manually seed the nyan game identifier (N) using this command.
+    - !getnyan:        Returns the game identifier of the last nyan.
 */
 
 engine.on('msg', function(data) {
