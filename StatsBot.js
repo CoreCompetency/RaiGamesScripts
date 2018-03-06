@@ -39,7 +39,7 @@ engine.on('msg', function(data) {
             }
         }
         if (data.message == "!help") {
-            engine.chat("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/StatsBot.js");
+            engine.chat("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
         }
         else if (data.message == "!helpline") {
             engine.chat("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
