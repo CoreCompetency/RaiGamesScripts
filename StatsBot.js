@@ -16,6 +16,7 @@
     - !helpline:       Provides information about the National Problem Gambling Helpline.
     - !donate
       !tip:               Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+    
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     
     The following commands can be called by the account running this script:
