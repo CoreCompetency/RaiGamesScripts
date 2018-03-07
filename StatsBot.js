@@ -12,6 +12,7 @@
                        For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
     - !n
       !nyan:           Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !getnyan:        Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
     - !help:           Provides a link to this script in github for review of these comments.
     - !helpline:       Provides information about the National Problem Gambling Helpline.
     - !donate
@@ -22,7 +23,6 @@
     The following commands can be called by the account running this script:
     - !stop:           This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
     - !seednyan N:     If the script has not seen a nyan yet, you can manually seed the nyan game identifier (N) using this command.
-    - !getnyan:        Returns the game identifier of the last nyan.
 */
 
 engine.on('msg', function(data) {
@@ -34,9 +34,6 @@ engine.on('msg', function(data) {
             }
             else if (data.message.startsWith("!seednyan")) {
                 nyan = parseInt(data.message.substring(10));
-            }
-            else if (data.message == "!getnyan") {
-                engine.chat(nyan.toString()); // Sending anything other than a string to chat is murder.
             }
         }
         if (data.message == "!help") {
@@ -58,6 +55,9 @@ engine.on('msg', function(data) {
             else {
                 engine.chat("Nobody here but us chickens.");
             }
+        }
+        else if (data.message == "!getnyan") {
+           engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
         }
         else if (hash && (data.message.startsWith("!med") || data.message.startsWith("!avg")))
         {
