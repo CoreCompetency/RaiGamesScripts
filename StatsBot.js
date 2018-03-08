@@ -64,7 +64,7 @@ engine.on('msg', function(data) {
             var message = data.message;
             var maxLength = 0;
             
-            // Check input.
+            /* Check input. */
             var lengths = message.substring(4).split(" ").filter(function(i) { return i });
             if (lengths.length == 0) {
                 lengths.push("100");
@@ -74,11 +74,11 @@ engine.on('msg', function(data) {
                 return;
             }
             
-            // Check for invalid arguments.
+            /* Check for invalid arguments. */
             for (var ii = 0; ii < lengths.length; ii++) {
                 var text = lengths[ii];
                 var length = parseInt(text);
-                if (isNaN(length)) { // Check for NaN.
+                if (isNaN(length)) { /* Check for NaN. */
                     engine.chat("Wrong format: " + text);
                     return;
                 }
@@ -114,7 +114,7 @@ engine.on('msg', function(data) {
                 }
             }
             
-            // Get data.
+            /* Get data. */
             var games = [];
             
             var lastHash = "";
@@ -125,7 +125,7 @@ engine.on('msg', function(data) {
                 lastHash = gameHash;
             }
             
-            // Process request.
+            /* Process request. */
             var results = [];
             var response = "";
             
@@ -149,16 +149,16 @@ engine.on('msg', function(data) {
                     }
                     result += ", ";
                 }
-                result = result.substring(0, result.length - 2); // Trim final comma.
+                result = result.substring(0, result.length - 2); /* Trim final comma. */
                 results.push(result);
             }
             
-            // Print result.
+            /* Print result. */
             var response = response.trim() + ":";
             for (var ii = 0; ii < results.length; ii++) {
                 response += " " + results[ii] + "; ";
             }
-            response = response.substring(0, response.length - 2); // Trim final semicolon.
+            response = response.substring(0, response.length - 2); /* Trim final semicolon. */
             engine.chat(response);
         }
         else if (data.message.toLowerCase().indexOf(scriptUsername.toLowerCase()) >= 0) {
@@ -172,7 +172,7 @@ function med(games, start, length) {
     local.sort(function(a, b) { return a - b });
 
     var point = Math.floor(length / 2);
-    if (length % 2) { // Exact median.
+    if (length % 2) { /* Exact median. */
         return games[point] + "x";
     }
     else {
@@ -196,12 +196,12 @@ function genGameHash(serverSeed) {
 function crashPointFromHash(serverSeed) {
     var hash = hmac(serverSeed, '000000000000000007a9a31ff7f07463d91af6b5454241d5faf282e5e0fe1b3a');
 
-    // In 1 of 101 games the game crashes instantly.
+    /* In 1 of 101 games the game crashes instantly. */
     if (divisible(hash, 101)) {
         return 0;
     }
 
-    // Use the most significant 52-bit from the hash to calculate the crash point
+    /* Use the most significant 52-bit from the hash to calculate the crash point. */
     var h = parseInt(hash.slice(0,52/4),16);
     var e = Math.pow(2,52);
     return (Math.floor((100 * e - h) / (e - h))/100).toFixed(2);
