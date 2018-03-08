@@ -1,7 +1,18 @@
 /*==================================
+This script will play a sound alert any time you win or lose a bet or your username is mentioned in the chat.
+
+Individual alerts can be turned off before script run by changing the relevant values of the sounds object.
+Alerts can also be turned on or off while the script is running by saying the following commands in the chat:
+ - !sounds.win:on
+ - !sounds.win:off
+ - !sounds.lose:on
+ - !sounds.lose:off
+ - !sounds.mention:on
+ - !sounds.mention:off
+
 This script can be dropped directly into the auto tab on RaiGames.io to enable sounds during manual betting.
 It can also be dropped into another script to enable sounds during automated betting.
-This does mean that AutoBet can't be supported unless you have a separate window open.
+In order to use with AutoBet, this script needs to be running in a separate tab/window.
 ===================================*/
 
 var sounds = {
