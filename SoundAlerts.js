@@ -1,6 +1,6 @@
 /*==================================
-This script can be dropped directly into the auto tab on RaiGames.io to enable sounds
-during manual betting or dropped into another script to enable sounds during automated betting.
+This script can be dropped directly into the auto tab on RaiGames.io to enable sounds during manual betting.
+It can also be dropped into another script to enable sounds during automated betting.
 This does mean that AutoBet can't be supported unless you have a separate window open.
 ===================================*/
 
