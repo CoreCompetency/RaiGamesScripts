@@ -2,21 +2,25 @@
    This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
 
    The following commands can be called by anyone:
-    - !med:            Returns the median of the last 100 games.
-    - !med A[ B[ C]]:  Returns the median(s) of the last A[, B[, and C]] games, max 1000 each.
-                       A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
-                       For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-    - !avg:            Returns the average of the last 100 games.
-    - !avg A[ B[ C]]:  Returns the average(s) of the last A[, B[, and C]] games, max 1000 (each).
-                       A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
-                       For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+    - !med:             Returns the median of the last 100 games.
+    - !med A[ B[ C]]:   Returns the median(s) of the last A[, B[, and C]] games, max 1000 each.
+                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
+                        For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
+    - !avg:             Returns the average of the last 100 games.
+    - !avg A[ B[ C]]:   Returns the average(s) of the last A[, B[, and C]] games, max 1000 (each).
+                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                        For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+    - !mode:            Returns the mode(s) of the last 100 games (, separated by |).
+    - !mode A[ B[ C]]:  Returns the mode(s) of the last A[, B[, and C]] games(, separated by |), max 1000 (each).
+                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                        For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
     - !n
-      !nyan:           Returns the last time there was a nyan, which is a bust >= 1000.00.
-    - !getnyan:        Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
-    - !help:           Provides a link to this script in github for review of these comments.
-    - !helpline:       Provides information about the National Problem Gambling Helpline.
+      !nyan:            Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !getnyan:         Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
+    - !help:            Provides a link to this script in github for review of these comments.
+    - !helpline:        Provides information about the National Problem Gambling Helpline.
     - !donate
-      !tip:            Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+      !tip:             Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     
@@ -161,6 +165,104 @@ engine.on('msg', function(data) {
             response = response.substring(0, response.length - 2); /* Trim final semicolon. */
             engine.chat(response);
         }
+		/* This is a lot of copied code, but I anticipate cleaning up this whole script as part of my updates, so I will address once all the basic functionality is working. */
+        else if (hash && (data.message.startsWith("!mode")))
+        {
+            var message = data.message;
+            var maxLength = 0;
+            
+            /* Check input. */
+            var lengths = message.substring(5).split(" ").filter(function(i) { return i });
+            if (lengths.length == 0) {
+                lengths.push("100");
+            }
+            else if (lengths.length > 3) {
+                engine.chat("Please limit to three arguments in one request.");
+                return;
+            }
+            
+            /* Check for invalid arguments. */
+            for (var ii = 0; ii < lengths.length; ii++) {
+                var text = lengths[ii];
+                var length = parseInt(text);
+                if (isNaN(length)) { /* Check for NaN. */
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (length < 1 || length > 1000) {
+                    engine.chat("Please target a number of games between 1 and 1000: " + text);
+                    return;
+                }
+                else if (text.indexOf("x") > 0) {
+                    var parts = text.split("x");
+                    if (parts.length < 2) {
+                        engine.chat("Wrong format: " + text);
+                        return;
+                    }
+                    else {
+                        var sets = parseInt(parts[1]);
+                        if (isNaN(sets)) {
+                            engine.chat("Wrong format: " + text);
+                            return;
+                        }
+                        else if (sets < 0 || sets > 5) {
+                            engine.chat("Please target no more than 5 sets: " + text);
+                            return;
+                        }
+                        else if ((length * sets) > maxLength) {
+                            maxLength = length * sets;
+                        }
+                    }
+                }
+                else {
+                    if (length > maxLength) {
+                        maxLength = length;
+                    }
+                }
+            }
+            
+            /* Get data. */
+            var games = [];
+            
+            var lastHash = "";
+            for (var ii = 0; ii < maxLength; ii++) {
+                var gameHash = (lastHash != "" ? genGameHash(lastHash) : hash);
+                var gameCrash = crashPointFromHash(lastHash != "" ? genGameHash(lastHash) : hash);
+                games.push(gameCrash);
+                lastHash = gameHash;
+            }
+            
+            /* Process request. */
+            var results = [];
+            var response = "";
+            
+            for (var ii = 0; ii < lengths.length; ii++) {
+                var text = lengths[ii];
+                response += text + " ";
+                var length = parseInt(text);
+
+                var sets = 1;
+                if (lengths[ii].indexOf("x") > 1) {
+                    sets = parseInt(lengths[ii].split("x")[1]);
+                }
+                
+                var result = "";
+                for (var jj = 0; jj < sets; jj++) {
+					result += mode(games, length*jj, length);
+                    result += ", ";
+                }
+                result = result.substring(0, result.length - 2); /* Trim final comma. */
+                results.push(result);
+            }
+            
+            /* Print result. */
+            var response = response.trim() + ":";
+            for (var ii = 0; ii < results.length; ii++) {
+                response += " " + results[ii] + "; ";
+            }
+            response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+            engine.chat(response);
+        }
         else if (data.message.toLowerCase().indexOf(scriptUsername.toLowerCase()) >= 0) {
             snark();
         }
@@ -187,6 +289,37 @@ function avg(games, start, length) {
         sum += parseFloat(games[ii]);
     }
     return (sum / length).toFixed(2) + "x";
+}
+
+function mode(games, start, length) {
+    var modeMap = {};
+    var maxEl = [games[0]];
+    var maxCount = 1;
+
+    for (var ii = start; ii < start + length; ii++) {
+        var el = games[ii];
+
+        if (modeMap[el] == null)
+            modeMap[el] = 1;
+        else
+            modeMap[el]++;
+
+        if (modeMap[el] > maxCount)
+        {
+            maxEl = [el];
+            maxCount = modeMap[el];
+        }
+        else if (modeMap[el] == maxCount)
+        {
+            maxEl.push(el);
+        }
+    }
+	
+    var result = maxEl[0] + "x";
+    for (var ii = 1; ii < maxEl.length; ii++) {
+        result += "|" + maxEl[ii] + "x";
+    }
+    return result + " (" + maxCount + " times)";
 }
 
 function genGameHash(serverSeed) {
