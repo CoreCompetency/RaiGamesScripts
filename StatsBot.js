@@ -244,7 +244,7 @@ engine.on('msg', function(data) {
                 
                 var result = "";
                 for (var jj = 0; jj < sets; jj++) {
-					result += mode(games, ,length*jj, length);
+					result += mode(games, length*jj, length);
                     result += ", ";
                 }
                 result = result.substring(0, result.length - 2); /* Trim final comma. */
@@ -293,8 +293,7 @@ function mode(games, start, length) {
     var maxCount = 1;
 
     for (var ii = start; ii < start + length; ii++) {
-    {
-        var el = games[i];
+        var el = games[ii];
 
         if (modeMap[el] == null)
             modeMap[el] = 1;
@@ -303,8 +302,7 @@ function mode(games, start, length) {
 
         if (modeMap[el] > maxCount)
         {
-            maxEl.clear();
-            maxEl.push(el);
+            maxEl = [el];
             maxCount = modeMap[el];
         }
         else if (modeMap[el] == maxCount)
@@ -316,7 +314,7 @@ function mode(games, start, length) {
 	
     var result = maxEl[0] + "x";
     for (var ii = 1; ii < result.length; ii++) {
-        result += "/" + result[ii] + "x";
+        result += "/" + maxEl[ii] + "x";
     }
     return result;
 }
