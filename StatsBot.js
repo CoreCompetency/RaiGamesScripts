@@ -312,7 +312,6 @@ function mode(games, start, length) {
         else if (modeMap[el] == maxCount)
         {
             maxEl.push(el);
-            maxCount = modeMap[el];
         }
     }
 	
@@ -320,7 +319,7 @@ function mode(games, start, length) {
     for (var ii = 1; ii < maxEl.length; ii++) {
         result += "|" + maxEl[ii] + "x";
     }
-    return result;
+    return result + " (" + maxCount + " times)";
 }
 
 function genGameHash(serverSeed) {
