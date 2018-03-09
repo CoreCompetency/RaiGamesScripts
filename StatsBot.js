@@ -275,7 +275,7 @@ function med(games, start, length) {
 
     var point = Math.floor(length / 2);
     if (length % 2) { /* Exact median. */
-        return games[point] + "x";
+        return local[point] + "x";
     }
     else {
         var avg = (parseFloat(local[point - 1]) + parseFloat(local[point])) / 2.0;
