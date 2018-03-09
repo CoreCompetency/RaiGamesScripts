@@ -161,6 +161,104 @@ engine.on('msg', function(data) {
             response = response.substring(0, response.length - 2); /* Trim final semicolon. */
             engine.chat(response);
         }
+		/* This is a lot of copied code, but I anticipate cleaning up this whole script as part of my updates, so I will address once all the basic functionality is working. */
+        else if (hash && (data.message.startsWith("!mode")))
+        {
+            var message = data.message;
+            var maxLength = 0;
+            
+            /* Check input. */
+            var lengths = message.substring(5).split(" ").filter(function(i) { return i });
+            if (lengths.length == 0) {
+                lengths.push("100");
+            }
+            else if (lengths.length > 3) {
+                engine.chat("Please limit to three arguments in one request.");
+                return;
+            }
+            
+            /* Check for invalid arguments. */
+            for (var ii = 0; ii < lengths.length; ii++) {
+                var text = lengths[ii];
+                var length = parseInt(text);
+                if (isNaN(length)) { /* Check for NaN. */
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (length < 1 || length > 1000) {
+                    engine.chat("Please target a number of games between 1 and 1000: " + text);
+                    return;
+                }
+                else if (text.indexOf("x") > 0) {
+                    var parts = text.split("x");
+                    if (parts.length < 2) {
+                        engine.chat("Wrong format: " + text);
+                        return;
+                    }
+                    else {
+                        var sets = parseInt(parts[1]);
+                        if (isNaN(sets)) {
+                            engine.chat("Wrong format: " + text);
+                            return;
+                        }
+                        else if (sets < 0 || sets > 5) {
+                            engine.chat("Please target no more than 5 sets: " + text);
+                            return;
+                        }
+                        else if ((length * sets) > maxLength) {
+                            maxLength = length * sets;
+                        }
+                    }
+                }
+                else {
+                    if (length > maxLength) {
+                        maxLength = length;
+                    }
+                }
+            }
+            
+            /* Get data. */
+            var games = [];
+            
+            var lastHash = "";
+            for (var ii = 0; ii < maxLength; ii++) {
+                var gameHash = (lastHash != "" ? genGameHash(lastHash) : hash);
+                var gameCrash = crashPointFromHash(lastHash != "" ? genGameHash(lastHash) : hash);
+                games.push(gameCrash);
+                lastHash = gameHash;
+            }
+            
+            /* Process request. */
+            var results = [];
+            var response = "";
+            
+            for (var ii = 0; ii < lengths.length; ii++) {
+                var text = lengths[ii];
+                response += text + " ";
+                var length = parseInt(text);
+
+                var sets = 1;
+                if (lengths[ii].indexOf("x") > 1) {
+                    sets = parseInt(lengths[ii].split("x")[1]);
+                }
+                
+                var result = "";
+                for (var jj = 0; jj < sets; jj++) {
+					result += mode(games, ,length*jj, length);
+                    result += ", ";
+                }
+                result = result.substring(0, result.length - 2); /* Trim final comma. */
+                results.push(result);
+            }
+            
+            /* Print result. */
+            var response = response.trim() + ":";
+            for (var ii = 0; ii < results.length; ii++) {
+                response += " " + results[ii] + "; ";
+            }
+            response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+            engine.chat(response);
+        }
         else if (data.message.toLowerCase().indexOf(scriptUsername.toLowerCase()) >= 0) {
             snark();
         }
@@ -187,6 +285,40 @@ function avg(games, start, length) {
         sum += parseFloat(games[ii]);
     }
     return (sum / length).toFixed(2) + "x";
+}
+
+function mode(games, start, length) {
+    var modeMap = {};
+    var maxEl = [games[0]];
+    var maxCount = 1;
+
+    for (var ii = start; ii < start + length; ii++) {
+    {
+        var el = games[i];
+
+        if (modeMap[el] == null)
+            modeMap[el] = 1;
+        else
+            modeMap[el]++;
+
+        if (modeMap[el] > maxCount)
+        {
+            maxEl.clear();
+            maxEl.push(el);
+            maxCount = modeMap[el];
+        }
+        else if (modeMap[el] == maxCount)
+        {
+            maxEl.push(el);
+            maxCount = modeMap[el];
+        }
+    }
+	
+    var result = maxEl[0] + "x";
+    for (var ii = 1; ii < result.length; ii++) {
+        result += "/" + result[ii] + "x";
+    }
+    return result;
 }
 
 function genGameHash(serverSeed) {
