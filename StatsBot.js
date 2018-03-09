@@ -314,7 +314,9 @@ function mode(games, start, length) {
             maxEl.push(el);
         }
     }
-	
+    
+    maxEl.sort(function(a, b) { return a - b });
+    
     var result = maxEl[0] + "x";
     for (var ii = 1; ii < maxEl.length; ii++) {
         result += "|" + maxEl[ii] + "x";
