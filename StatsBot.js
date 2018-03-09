@@ -313,8 +313,8 @@ function mode(games, start, length) {
     }
 	
     var result = maxEl[0] + "x";
-    for (var ii = 1; ii < result.length; ii++) {
-        result += "/" + maxEl[ii] + "x";
+    for (var ii = 1; ii < maxEl.length; ii++) {
+        result += "|" + maxEl[ii] + "x";
     }
     return result;
 }
