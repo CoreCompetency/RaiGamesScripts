@@ -37,7 +37,7 @@
 
 engine.on("msg", function(data) {
     if (data.message) {
-        if (data.username == scriptUsername) {
+        if (data.username == _scriptUsername) {
             if (data.message == "!stop") {
                 cacheResults();
                 engine.chat("Script shutting down.");
@@ -61,19 +61,20 @@ engine.on("msg", function(data) {
         else if (data.message == "!tip") {
             engine.chat("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
         }
-        else if (data.message.toLowerCase().indexOf(scriptUsername.toLowerCase()) >= 0) {
+        else if (data.message.toLowerCase().indexOf(_scriptUsername.toLowerCase()) >= 0) {
             snark();
         }
-        else if (!caughtUp) {
+        else if (!_caughtUp) {
             /* Script isn't ready to respond to the requests below yet. */
             return;
         }
         else if (data.message == "!n" || data.message == "!nyan") {
-            var n = nyan();
-            engine.chat("Yeah, I saw nyan around here. It was around " + (game - n) + " games ago." + ". Who's askin'?");
+            var nyan = getnyan();
+            engine.chat("Yeah, I saw nyan around here. It was around " + (_game.id - nyan) + " games ago." + ". Who's askin'?");
         }
         else if (data.message == "!getnyan") {
-           engine.chat("Last nyan was in game " + nyan() + ". View the game here: https://raigames.io/game/" + nyan);
+           var nyan = getnyan();
+           engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!avg"))
         {
@@ -147,10 +148,10 @@ engine.on("msg", function(data) {
                 var result = "";
                 for (var jj = 0; jj < sets; jj++) {
                     if (message.startsWith("!med")) {
-                        result += med(games, length*jj, length);
+                        result += med(length*jj, length);
                     }
                     else if (message.startsWith("!avg")) {
-                        result += avg(games, length*jj, length);
+                        result += avg(length*jj, length);
                     }
                     result += ", ";
                 }
@@ -238,7 +239,7 @@ engine.on("msg", function(data) {
                 
                 var result = "";
                 for (var jj = 0; jj < sets; jj++) {
-                    result += mode(games, length*jj, length);
+                    result += mode(length*jj, length);
                     result += ", ";
                 }
                 result = result.substring(0, result.length - 2); /* Trim final comma. */
@@ -260,29 +261,29 @@ engine.on("msg", function(data) {
  Calculations for requests.
 ===================================*/
 
-function nyan() {
-    if (!nyan) {
-        for (var ii = 0; ii < games.length; ii++) {
-            var current = games[ii];
-            if (current.bust >= 100000) {
-                nyan = current.id;
+function getnyan() {
+    if (!_nyan) {
+        for (var ii = 0; ii < _games.length; ii++) {
+            var current = _games[ii];
+            if (current.bust >= 1000.00) {
+                _nyan = current.id;
                 break;
             }
         }
     }
-    return nyan;
+    return _nyan;
 }
 
 function med(start, length) {
-    var local = games.slice(start, start + length);
-    local.sort(function(a, b) { return a - b; });
+    var local = _games.slice(start, start + length);
+    local.sort(function(a, b) { return a.bust - b.bust; });
 
     var point = Math.floor(length / 2);
     if (length % 2) { /* Exact median. */
-        return local[point] + "x";
+        return local[point].bust + "x";
     }
     else {
-        var avg = (parseFloat(local[point - 1]) + parseFloat(local[point])) / 2.0;
+        var avg = (parseFloat(local[point - 1].bust) + parseFloat(local[point].bust)) / 2.0;
         return avg.toFixed(2) + "x";
     }
 }
@@ -290,18 +291,18 @@ function med(start, length) {
 function avg(start, length) {
     var sum = 0;
     for (var ii = start; ii < start + length; ii++) {
-        sum += parseFloat(games[ii]);
+        sum += parseFloat(_games[ii].bust);
     }
     return (sum / length).toFixed(2) + "x";
 }
 
 function mode(start, length) {
     var modeMap = {};
-    var maxEl = [games[0]];
+    var maxEl = [_games[0].bust];
     var maxCount = 1;
 
     for (var ii = start; ii < start + length; ii++) {
-        var el = games[ii];
+        var el = _games[ii].bust;
 
         if (modeMap[el] == null)
             modeMap[el] = 1;
@@ -332,20 +333,20 @@ function mode(start, length) {
  Games management.
 ===================================*/
 
-var caughtUp = false;
-var game;
-var games = getCachedResults();
-var nyan;
+var _caughtUp = false;
+var _game;
+var _games = getCachedResults();
+var _nyan;
 
 engine.on("game_crash", function(data) {
-    if (game) {
-        game.bust = data.game_crash / 100.0;
-        if (games[0].id < (game.id - 1)) {
+    if (_game) {
+        _game.bust = data.game_crash / 100.0;
+        if (_games[0].id < (_game.id - 1)) {
             /* If this is the first run in a while, this could take a few seconds.
                If most games are already cached, this should be quick. */
-            var missing = [game];
+            var missing = [_game];
             var lastHash = data.hash;
-            for (var id = game.id - 1; id > games[0].id; id--) {
+            for (var id = _game.id - 1; id > _games[0].id; id--) {
                 var gameHash = genGameHash(lastHash);
                 var gameCrash = crashPointFromHash(gameHash);
                 
@@ -356,76 +357,77 @@ engine.on("game_crash", function(data) {
                 
                 lastHash = gameHash;
             }
-            games = concatArrays(missing, games);
-            if (games[0].id == game.id) {
-                caughtUp = true;
+            _games = concatArrays(missing, _games);
+            if (_games[0].id == _game.id) {
+                _caughtUp = true;
                 cacheResults();
                 engine.chat("Script ready. Ask me anything.");
             }
         }
         else {
-            games.unshift(game);
-            if (!caughtUp) {
-                caughtUp = true;
+            _games.unshift(_game);
+            if (!_caughtUp) {
+                _caughtUp = true;
                 cacheResults();
                 engine.chat("Script ready. Ask me anything.");
             }
         }
-    }
-    if (data.game_crash >= 100000) {
-        nyan = game;
+        
+        if (_game.bust >= 1000.00) {
+            _nyan = _game.id;
+        }
     }
 });
 engine.on("game_starting", function(data) {
-    game = {};
-    game.id = data.game_id;
+    _game = {};
+    _game.id = data.game_id;
 });
 
 /*==================================
  Snark.
 ===================================*/
 
-var snarks = [];
-snarks.push("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
-snarks.push("Don't sass me.");
-snarks.push("You've got to ask yourself one question: do I feel lucky? Well do ya, punk?");
-snarks.push("There's no shame in my robot game.");
-snarks.push("Hey, I'm workin' here!");
-snarks.push("everbody to the limit, everybody to the limit, everbody come on fhqwhgads");
-snarks.push("♫ Don't stop believin' ♫ Hold on to that feelin' ♫");
-snarks.push("bitconneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeccccct");
-snarks.push("Gotta catch 'em all!");
-snarks.push("Shiny");
-snarks.push("For the Horde!");
-snarks.push("It's over, Anakin!  I have the high ground.");
-snarks.push("I wanna be the very best, like no one ever was!");
-snarks.push("A dream is a wish your heart makes.");
-snarks.push("GNU Terry Pratchett");
-snarks.push("In the name of the moon, I will punish you!");
-snarks.push("Silence, Earthling! My name is Darth Vader. I am an extra-terrestrial from the planet Vulcan!");
-snarks.push("Where we're going, we don't need roads.");
-snarks.push("The flower that blooms in adversity is the most rare and beautiful of them all.");
-snarks.push("In the beginning the Universe was created. This has made a lot of people very angry and been widely regarded as a bad move.");
-snarks.push("I don't know half of you half as well as I should like; and I like less than half of you half as well as you deserve.");
-snarks.push("Life is a co-op game.");
-snarks.push("F*ck! Even in the future nothing works.");
-snarks.push("Go home. Feed your dog. Meet your kids.");
+var _snarks = [];
+_snarks.push("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+_snarks.push("Don't sass me.");
+_snarks.push("You've got to ask yourself one question: do I feel lucky? Well do ya, punk?");
+_snarks.push("There's no shame in my robot game.");
+_snarks.push("Hey, I'm workin' here!");
+_snarks.push("everbody to the limit, everybody to the limit, everbody come on fhqwhgads");
+_snarks.push("♫ Don't stop believin' ♫ Hold on to that feelin' ♫");
+_snarks.push("bitconneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeccccct");
+_snarks.push("Gotta catch 'em all!");
+_snarks.push("Shiny");
+_snarks.push("For the Horde!");
+_snarks.push("It's over, Anakin!  I have the high ground.");
+_snarks.push("I wanna be the very best, like no one ever was!");
+_snarks.push("A dream is a wish your heart makes.");
+_snarks.push("GNU Terry Pratchett");
+_snarks.push("In the name of the moon, I will punish you!");
+_snarks.push("Silence, Earthling! My name is Darth Vader. I am an extra-terrestrial from the planet Vulcan!");
+_snarks.push("Where we're going, we don't need roads.");
+_snarks.push("The flower that blooms in adversity is the most rare and beautiful of them all.");
+_snarks.push("In the beginning the Universe was created. This has made a lot of people very angry and been widely regarded as a bad move.");
+_snarks.push("I don't know half of you half as well as I should like; and I like less than half of you half as well as you deserve.");
+_snarks.push("Life is a co-op game.");
+_snarks.push("F*ck! Even in the future nothing works.");
+_snarks.push("Go home. Feed your dog. Meet your kids.");
 function snark() {
-    var index = Math.floor(Math.random() * snarks.length);
-    engine.chat(snarks[index]);
+    var index = Math.floor(Math.random() * _snarks.length);
+    engine.chat(_snarks[index]);
 }
 
 /*==================================
  General-use variables.
 ===================================*/
 
-var scriptUsername = engine.getUsername();
+var _scriptUsername = engine.getUsername();
 
 /*==================================
  Cache management.
 ===================================*/
 
-var maxCached;
+var _maxCached;
 
 function getCachedResults() {
     var cached = [];
@@ -452,12 +454,12 @@ function getCachedResults() {
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
     
-    maxCached = cached[0].id;
+    _maxCached = cached[0].id;
     return cached;
 }
 
 function cacheResults() {
-    var slice = games.slice(0, games[0].id - maxCached);
+    var slice = _games.slice(0, _games[0].id - _maxCached);
     localStorage.setItem("games", JSON.stringify(slice));
     console.log("Cached " + slice.length + " games in localStorage.");
 }
