@@ -357,11 +357,11 @@ engine.on("game_crash", function(data) {
                 lastHash = gameHash;
             }
             games = concatArrays(missing, games);
-			if (games[0].id == game.id) {
-				caughtUp = true;
+            if (games[0].id == game.id) {
+                caughtUp = true;
                 cacheResults();
                 engine.chat("Script ready. Ask me anything.");
-			}
+            }
         }
         else {
             games.unshift(game);
