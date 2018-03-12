@@ -96,11 +96,16 @@ engine.on("msg", function(data) {
                 var text = lengths[ii];
                 var length = parseInt(text);
                 if (isNaN(length)) { /* Check for NaN. */
-                    engine.chat("Wrong format: " + text);
-                    return;
+                    if (text.toLowerCase() == "all") {
+                        lengths[ii] = length = _games.length.toString();
+                    }
+                    else {
+                        engine.chat("Wrong format: " + text);
+                        return;
+                    }
                 }
-                else if (length < 1 || length > 1000) {
-                    engine.chat("Please target a number of games between 1 and 1000: " + text);
+                else if (length < 1) {
+                    engine.chat("Please target at least one game: " + text);
                     return;
                 }
                 else if (text.indexOf("x") > 0) {
@@ -188,11 +193,16 @@ engine.on("msg", function(data) {
                 var text = lengths[ii];
                 var length = parseInt(text);
                 if (isNaN(length)) { /* Check for NaN. */
-                    engine.chat("Wrong format: " + text);
-                    return;
+                    if (text.toLowerCase() == "all") {
+                        lengths[ii] = length = _games.length.toString();
+                    }
+                    else {
+                        engine.chat("Wrong format: " + text);
+                        return;
+                    }
                 }
-                else if (length < 1 || length > 1000) {
-                    engine.chat("Please target a number of games between 1 and 1000: " + text);
+                else if (length < 1) {
+                    engine.chat("Please target at least one game: " + text);
                     return;
                 }
                 else if (text.indexOf("x") > 0) {
@@ -275,58 +285,76 @@ function getnyan() {
 }
 
 function med(start, length) {
-    var local = _games.slice(start, start + length);
-    local.sort(function(a, b) { return a.bust - b.bust; });
+    try {
+        var local = _games.slice(start, start + length);
+        local.sort(function(a, b) { return a.bust - b.bust; });
 
-    var point = Math.floor(length / 2);
-    if (length % 2) { /* Exact median. */
-        return local[point].bust + "x";
+        var point = Math.floor(length / 2);
+        if (length % 2) { /* Exact median. */
+            return local[point].bust + "x";
+        }
+        else {
+            var avg = (parseFloat(local[point - 1].bust) + parseFloat(local[point].bust)) / 2.0;
+            return avg.toFixed(2) + "x";
+        }
     }
-    else {
-        var avg = (parseFloat(local[point - 1].bust) + parseFloat(local[point].bust)) / 2.0;
-        return avg.toFixed(2) + "x";
+    catch (err) {
+        /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
+        return "NaN";
     }
 }
 
 function avg(start, length) {
-    var sum = 0;
-    for (var ii = start; ii < start + length; ii++) {
-        sum += parseFloat(_games[ii].bust);
+    try {
+        var sum = 0;
+        for (var ii = start; ii < start + length; ii++) {
+            sum += parseFloat(_games[ii].bust);
+        }
+        return (sum / length).toFixed(2) + "x";
     }
-    return (sum / length).toFixed(2) + "x";
+    catch (err) {
+        /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
+        return "NaN";
+    }
 }
 
 function mode(start, length) {
-    var modeMap = {};
-    var maxEl = [_games[0].bust];
-    var maxCount = 1;
+    try {
+        var modeMap = {};
+        var maxEl = [_games[0].bust];
+        var maxCount = 1;
 
-    for (var ii = start; ii < start + length; ii++) {
-        var el = _games[ii].bust;
+        for (var ii = start; ii < start + length; ii++) {
+            var el = _games[ii].bust;
 
-        if (modeMap[el] == null)
-            modeMap[el] = 1;
-        else
-            modeMap[el]++;
+            if (modeMap[el] == null)
+                modeMap[el] = 1;
+            else
+                modeMap[el]++;
 
-        if (modeMap[el] > maxCount)
-        {
-            maxEl = [el];
-            maxCount = modeMap[el];
+            if (modeMap[el] > maxCount)
+            {
+                maxEl = [el];
+                maxCount = modeMap[el];
+            }
+            else if (modeMap[el] == maxCount)
+            {
+                maxEl.push(el);
+            }
         }
-        else if (modeMap[el] == maxCount)
-        {
-            maxEl.push(el);
+        
+        maxEl.sort(function(a, b) { return a - b; });
+        
+        var result = maxEl[0] + "x";
+        for (var ii = 1; ii < maxEl.length; ii++) {
+            result += "|" + maxEl[ii] + "x";
         }
+        return result + " (" + maxCount + " times)";
     }
-    
-    maxEl.sort(function(a, b) { return a - b; });
-    
-    var result = maxEl[0] + "x";
-    for (var ii = 1; ii < maxEl.length; ii++) {
-        result += "|" + maxEl[ii] + "x";
+    catch (err) {
+        /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
+        return "NaN";
     }
-    return result + " (" + maxCount + " times)";
 }
 
 /*==================================
