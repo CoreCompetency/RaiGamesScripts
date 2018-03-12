@@ -35,7 +35,7 @@
  Request management.
 ===================================*/
 
-engine.on('msg', function(data) {
+engine.on("msg", function(data) {
     if (data.message) {
         if (data.username == scriptUsername) {
             if (data.message == "!stop") {
@@ -75,13 +75,13 @@ engine.on('msg', function(data) {
         else if (data.message == "!getnyan") {
            engine.chat("Last nyan was in game " + nyan() + ". View the game here: https://raigames.io/game/" + nyan);
         }
-        else if (hash && (data.message.startsWith("!med") || data.message.startsWith("!avg")))
+        else if (data.message.startsWith("!med") || data.message.startsWith("!avg"))
         {
             var message = data.message;
             var maxLength = 0;
             
             /* Check input. */
-            var lengths = message.substring(4).split(" ").filter(function(i) { return i });
+            var lengths = message.substring(4).split(" ").filter(function(ii) { return ii; });
             if (lengths.length == 0) {
                 lengths.push("100");
             }
@@ -167,7 +167,7 @@ engine.on('msg', function(data) {
             engine.chat(response);
         }
         /* This is a lot of copied code, but I anticipate cleaning up this whole script as part of my updates, so I will address once all the basic functionality is working. */
-        else if (hash && (data.message.startsWith("!mode")))
+        else if (data.message.startsWith("!mode"))
         {
             var message = data.message;
             var maxLength = 0;
@@ -261,7 +261,7 @@ engine.on('msg', function(data) {
 ===================================*/
 
 function nyan() {
-    if (!nyan)
+    if (!nyan) {
         for (var ii = 0; ii < games.length; ii++) {
             var current = games[ii];
             if (current.bust >= 100000) {
@@ -275,7 +275,7 @@ function nyan() {
 
 function med(start, length) {
     var local = games.slice(start, start + length);
-    local.sort(function(a, b) { return a - b });
+    local.sort(function(a, b) { return a - b; });
 
     var point = Math.floor(length / 2);
     if (length % 2) { /* Exact median. */
@@ -319,7 +319,7 @@ function mode(start, length) {
         }
     }
     
-    maxEl.sort(function(a, b) { return a - b });
+    maxEl.sort(function(a, b) { return a - b; });
     
     var result = maxEl[0] + "x";
     for (var ii = 1; ii < maxEl.length; ii++) {
@@ -357,6 +357,11 @@ engine.on("game_crash", function(data) {
                 lastHash = gameHash;
             }
             games = concatArrays(missing, games);
+			if (games[0].id == game.id) {
+				caughtUp = true;
+                cacheResults();
+                engine.chat("Script ready. Ask me anything.");
+			}
         }
         else {
             games.unshift(game);
@@ -429,7 +434,7 @@ function getCachedResults() {
     var csv = new XMLHttpRequest();
     csv.open("GET", "https://corecompetency.github.io/RaiGamesScripts/Results.csv", false); /* Block, don't do this asynchronously. */
     csv.send(null);
-    var lines = csv.responseText.split("\n").filter(function(ii) { return ii });
+    var lines = csv.responseText.split("\n").filter(function(ii) { return ii; });
     for (var ii = 0; ii < lines.length; ii++) {
         var line = lines[ii].split(",");
         var record = {};
@@ -445,7 +450,7 @@ function getCachedResults() {
         var length = local[0].id - cached[0].id;
         concatArrays(local.slice(0, length), cached);
     }
-    console.log("Pulled " + local.length + " games from localStorage.");
+    console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
     
     maxCached = cached[0].id;
     return cached;
@@ -475,7 +480,7 @@ function genGameHash(serverSeed) {
 };
 
 function crashPointFromHash(serverSeed) {
-    var hash = hmac(serverSeed, '000000000000000007a9a31ff7f07463d91af6b5454241d5faf282e5e0fe1b3a');
+    var hash = hmac(serverSeed, "000000000000000007a9a31ff7f07463d91af6b5454241d5faf282e5e0fe1b3a");
 
     /* In 1 of 101 games the game crashes instantly. */
     if (divisible(hash, 101)) {
