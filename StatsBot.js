@@ -2,36 +2,42 @@
    This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
 
    The following commands can be called by anyone:
-    - !med:             Returns the median of the last 100 games.
-    - !med A[ B[ C]]:   Returns the median(s) of the last A[, B[, and C]] games.
-                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
-                        For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-                        A, B, or C can also be the word "all" to specify all games.
-    - !avg:             Returns the average of the last 100 games.
-    - !avg A[ B[ C]]:   Returns the average(s) of the last A[, B[, and C]] games.
-                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
-                        For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
-                        A, B, or C can also be the word "all" to specify all games.
-    - !mode:            Returns the mode(s) of the last 100 games (, separated by |).
-    - !mode A[ B[ C]]:  Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
-                        A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
-                        For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
-                        A, B, or C can also be the word "all" to specify all games.
+    - !med:                    Returns the median of the last 100 games.
+    - !med A[ B[ C]]
+    - !median A[ B[ C]]:       Returns the median(s) of the last A[, B[, and C]] games.
+                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
+                               For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
+                               A, B, or C can also be the word "all" to specify all games.
+    - !avg:                    Returns the average of the last 100 games.
+    - !avg A[ B[ C]]
+    - !avgerage A[ B[ C]]:     Returns the average(s) of the last A[, B[, and C]] games.
+                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                               For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+                               A, B, or C can also be the word "all" to specify all games.
+    - !mode:                   Returns the mode(s) of the last 100 games (, separated by |).
+    - !mode A[ B[ C]]:         Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
+                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                               For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
+                               A, B, or C can also be the word "all" to specify all games.
+    - !prob D[ E[ F]]          
+      !probability D[ E[ F]]:  Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                               D, E, and F can also be specified in the format DxS, where S is the number of times in a row D appears, max 20 (each).
+                               For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
     - !n
-      !nyan:            Returns the last time there was a nyan, which is a bust >= 1000.00.
-    - !getnyan:         Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
-    - !help:            Provides a link to this script in github for review of these comments.
-    - !helpline:        Provides information about the National Problem Gambling Helpline.
+      !nyan:                   Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !getnyan:                Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
+    - !help:                   Provides a link to this script in github for review of these comments.
+    - !helpline:               Provides information about the National Problem Gambling Helpline.
     - !donate
-      !tip:             Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+      !tip:                    Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     
     The following commands can be called by the account running this script:
-    - !stop:           This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
-                       This will also trigger in-memory games to get stored to localCache for the next run.
-    - !clearhistory:   This will clear games from the localStorage.  To be used if something gets messed up.
-                       This will also trigger the script to stop so that the next run can fill localStorage again.
+    - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
+                      This will also trigger in-memory games to get stored to localCache for the next run.
+    - !clearhistory:  This will clear games from the localStorage.  To be used if something gets messed up.
+                      This will also trigger the script to stop so that the next run can fill localStorage again.
 */
 
 /*==================================
@@ -79,196 +85,191 @@ engine.on("msg", function(data) {
            var nyan = getnyan();
            engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
         }
-        else if (data.message.startsWith("!med") || data.message.startsWith("!avg"))
-        {
-            var message = data.message;
-            var maxLength = 0;
-            
-            /* Check input. */
-            var lengths = message.substring(4).split(" ").filter(function(ii) { return ii; });
-            if (lengths.length == 0) {
-                lengths.push("100");
-            }
-            else if (lengths.length > 3) {
-                engine.chat("Please limit to three arguments in one request.");
-                return;
-            }
-            
-            /* Check for invalid arguments. */
-            for (var ii = 0; ii < lengths.length; ii++) {
-                var text = lengths[ii];
-                var length = parseInt(text);
-                if (isNaN(length)) { /* Check for NaN. */
-                    if (text.toLowerCase() == "all") {
-                        lengths[ii] = length = _games.length.toString();
-                    }
-                    else {
-                        engine.chat("Wrong format: " + text);
-                        return;
-                    }
-                }
-                else if (length < 1) {
-                    engine.chat("Please target at least one game: " + text);
-                    return;
-                }
-                else if (text.indexOf("x") > 0) {
-                    var parts = text.split("x");
-                    if (parts.length < 2) {
-                        engine.chat("Wrong format: " + text);
-                        return;
-                    }
-                    else {
-                        var sets = parseInt(parts[1]);
-                        if (isNaN(sets)) {
-                            engine.chat("Wrong format: " + text);
-                            return;
-                        }
-                        else if (sets < 0 || sets > 5) {
-                            engine.chat("Please target no more than 5 sets: " + text);
-                            return;
-                        }
-                        else if ((length * sets) > maxLength) {
-                            maxLength = length * sets;
-                        }
-                    }
-                }
-                else {
-                    if (length > maxLength) {
-                        maxLength = length;
-                    }
-                }
-            }
-            
-            /* Process request. */
-            var results = [];
-            var response = "";
-            
-            for (var ii = 0; ii < lengths.length; ii++) {
-                var text = lengths[ii];
-                response += text + " ";
-                var length = parseInt(text);
-
-                var sets = 1;
-                if (lengths[ii].indexOf("x") > 1) {
-                    sets = parseInt(lengths[ii].split("x")[1]);
-                }
-                
-                var result = "";
-                for (var jj = 0; jj < sets; jj++) {
-                    if (message.startsWith("!med")) {
-                        result += med(length*jj, length);
-                    }
-                    else if (message.startsWith("!avg")) {
-                        result += avg(length*jj, length);
-                    }
-                    result += ", ";
-                }
-                result = result.substring(0, result.length - 2); /* Trim final comma. */
-                results.push(result);
-            }
-            
-            /* Print result. */
-            var response = response.trim() + ":";
-            for (var ii = 0; ii < results.length; ii++) {
-                response += " " + results[ii] + "; ";
-            }
-            response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-            engine.chat(response);
+        else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
+            processByLength(data.message, median);
         }
-        /* This is a lot of copied code, but I anticipate cleaning up this whole script as part of my updates, so I will address once all the basic functionality is working. */
-        else if (data.message.startsWith("!mode"))
-        {
-            var message = data.message;
-            var maxLength = 0;
-            
-            /* Check input. */
-            var lengths = message.substring(5).split(" ").filter(function(i) { return i });
-            if (lengths.length == 0) {
-                lengths.push("100");
-            }
-            else if (lengths.length > 3) {
-                engine.chat("Please limit to three arguments in one request.");
-                return;
-            }
-            
-            /* Check for invalid arguments. */
-            for (var ii = 0; ii < lengths.length; ii++) {
-                var text = lengths[ii];
-                var length = parseInt(text);
-                if (isNaN(length)) { /* Check for NaN. */
-                    if (text.toLowerCase() == "all") {
-                        lengths[ii] = length = _games.length.toString();
-                    }
-                    else {
-                        engine.chat("Wrong format: " + text);
-                        return;
-                    }
-                }
-                else if (length < 1) {
-                    engine.chat("Please target at least one game: " + text);
-                    return;
-                }
-                else if (text.indexOf("x") > 0) {
-                    var parts = text.split("x");
-                    if (parts.length < 2) {
-                        engine.chat("Wrong format: " + text);
-                        return;
-                    }
-                    else {
-                        var sets = parseInt(parts[1]);
-                        if (isNaN(sets)) {
-                            engine.chat("Wrong format: " + text);
-                            return;
-                        }
-                        else if (sets < 0 || sets > 5) {
-                            engine.chat("Please target no more than 5 sets: " + text);
-                            return;
-                        }
-                        else if ((length * sets) > maxLength) {
-                            maxLength = length * sets;
-                        }
-                    }
-                }
-                else {
-                    if (length > maxLength) {
-                        maxLength = length;
-                    }
-                }
-            }
-            
-            /* Process request. */
-            var results = [];
-            var response = "";
-            
-            for (var ii = 0; ii < lengths.length; ii++) {
-                var text = lengths[ii];
-                response += text + " ";
-                var length = parseInt(text);
-
-                var sets = 1;
-                if (lengths[ii].indexOf("x") > 1) {
-                    sets = parseInt(lengths[ii].split("x")[1]);
-                }
-                
-                var result = "";
-                for (var jj = 0; jj < sets; jj++) {
-                    result += mode(length*jj, length);
-                    result += ", ";
-                }
-                result = result.substring(0, result.length - 2); /* Trim final comma. */
-                results.push(result);
-            }
-            
-            /* Print result. */
-            var response = response.trim() + ":";
-            for (var ii = 0; ii < results.length; ii++) {
-                response += " " + results[ii] + "; ";
-            }
-            response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-            engine.chat(response);
+        else if (data.message.startsWith("!avg") || data.message.startsWith("!average")) {
+            processByLength(data.message, average);
+        }
+        else if (data.message.startsWith("!mode")) {
+            processByLength(data.message, mode);
+        }
+        else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
+            processByBust(data.message, probability);
         }
     }
 });
+
+function processByLength(message, action) {
+    /* Get the lengths that come after the command. */
+    var lengths = message.split(" ").filter(function(ii) { return ii; });
+    lengths = lengths.slice(1);
+    
+    /* Check input. */
+    if (lengths.length == 0) {
+        /* Default to 100 games. */
+        lengths.push("100");
+    }
+    else if (lengths.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < lengths.length; ii++) {
+        var text = lengths[ii];
+        var length = parseInt(text);
+        if (isNaN(length)) { /* Check for NaN. */
+            if (text.toLowerCase() == "all") {
+                lengths[ii] = length = _games.length.toString();
+            }
+            else {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
+        }
+        else if (length < 1) {
+            engine.chat("Please target at least one game: " + text);
+            return;
+        }
+        else if (text.indexOf("x") > 0) {
+            var parts = text.split("x");
+            if (parts.length < 2) {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
+            else {
+                var sets = parseInt(parts[1]);
+                if (isNaN(sets)) {
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (sets < 1 || sets > 5) {
+                    engine.chat("Please target between one and five sets: " + text);
+                    return;
+                }
+            }
+        }
+    }
+    
+    /* Process request. */
+    var results = [];
+    var response = "";
+    
+    for (var ii = 0; ii < lengths.length; ii++) {
+        var text = lengths[ii];
+        response += text + " ";
+        var length = parseInt(text);
+
+        var sets = 1;
+        if (lengths[ii].indexOf("x") > 1) {
+            sets = parseInt(lengths[ii].split("x")[1]);
+        }
+        
+        var result = "";
+        for (var jj = 0; jj < sets; jj++) {
+            result += target(length*jj, length);
+            result += ", ";
+        }
+        result = result.substring(0, result.length - 2); /* Trim final comma. */
+        results.push(result);
+    }
+    
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
+
+function processByBust(message, action) {
+    /* Get the cashouts that come after the command. */
+    var cashouts = message.split(" ").filter(function(ii) { return ii; });
+    cashouts = cashouts.slice(1);
+    
+    /* Check input. */
+    if (cashouts.length == 0) {
+        /* Default to 2x. */
+        cashouts.push("2");
+    }
+    else if (cashouts.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+        
+        var cashout;
+        if (text.startsWith("<") || text.startsWith(">")) {
+            cashout = parseFloat(text.substring(1));
+        }
+        else {
+            cashout = parseFloat(text);
+        }
+        
+        if (isNaN(cashout)) { /* Check for NaN. */
+            engine.chat("Wrong format: " + text);
+            return;
+        }
+        else if (cashout < 1) {
+            engine.chat("Please target at least one cashout: " + text);
+            return;
+        }
+        else if (text.indexOf("x") > 0) {
+            var parts = text.split("x");
+            if (parts.length < 2) {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
+            else {
+                var streak = parseInt(parts[1]);
+                if (isNaN(streak)) {
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (streak < 1 || streak > 20) {
+                    engine.chat("Please target a streak between one and 20: " + text);
+                    return;
+                }
+            }
+        }
+    }
+    
+    /* Process request. */
+    var results = [];
+    var response = "";
+    
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+        response += text + " ";
+        var cashout = parseFloat(text);
+
+        var streak = 1;
+        if (cashouts[ii].indexOf("x") > 1) {
+            streak = parseFloat(cashouts[ii].split("x")[1]);
+        }
+        
+        var result = "";
+        for (var jj = 0; jj < sets; jj++) {
+            result += target(cashout*jj);
+            result += ", ";
+        }
+        result = result.substring(0, result.length - 2); /* Trim final comma. */
+        results.push(result);
+    }
+    
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
 
 /*==================================
  Calculations for requests.
@@ -361,8 +362,29 @@ function mode(start, length) {
 }
 
 function probability(cashout) {
-    /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
-    return '~' + round(99 / (1.01 * (cashout - 0.01)), 3) + '%';
+    var invert = false;
+    if (cashout.startsWith("<") || cashout.startsWith(">")) {
+        if (cashout.startsWith("<")) {
+            invert = true;
+        }
+        cashout = cashout.substring(1);
+    }
+    
+    var value = parseFloat(cashout);
+    var prob = 99 / (1.01 * (cashout - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    
+    /* Check for inversion. */
+    if (invert) {
+        prob = 1 - prob;
+    }
+    
+    /* Check for streak. */
+    if (text.indexOf("x") > 0) {
+        var streak = parseInt(cashout.split("x")[1]);
+        prob = Math.pow(prob, streak);
+    }
+    
+    return '~' + round(prob, 3) + '%';
 }
 
 /*==================================
@@ -526,9 +548,9 @@ function crashPointFromHash(serverSeed) {
     }
 
     /* Use the most significant 52-bit from the hash to calculate the crash point. */
-    var h = parseInt(hash.slice(0,52/4),16);
+    var h = parseInt(hash.slice(0, 52 / 4), 16);
     var e = Math.pow(2, 52);
-    return (Math.floor((100 * e - h) / (e - h))/100).toFixed(2);
+    return (Math.floor((100 * e - h) / (e - h)) / 100).toFixed(2);
 };
 
 function hmac(key, v) {
