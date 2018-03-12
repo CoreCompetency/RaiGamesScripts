@@ -11,7 +11,7 @@ Alerts can also be turned on or off while the script is running by saying the fo
  - !sounds.mention:off
 
 This script can be dropped directly into the auto tab on RaiGames.io to enable sounds during manual betting.
-It can also be dropped into another script to enable sounds during automated betting.
+It can also be dropped into another script to enable sounds during scripted betting.
 In order to use with AutoBet, this script needs to be running in a separate tab/window.
 ===================================*/
 
