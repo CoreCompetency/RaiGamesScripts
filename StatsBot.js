@@ -6,17 +6,17 @@
     - !med A[ B[ C]]:   Returns the median(s) of the last A[, B[, and C]] games.
                         A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
                         For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-                        A, B, and/or C can also be the word "all" to specify all games.
+                        A, B, or C can also be the word "all" to specify all games.
     - !avg:             Returns the average of the last 100 games.
     - !avg A[ B[ C]]:   Returns the average(s) of the last A[, B[, and C]] games.
                         A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
                         For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
-                        A, B, and/or C can also be the word "all" to specify all games.
+                        A, B, or C can also be the word "all" to specify all games.
     - !mode:            Returns the mode(s) of the last 100 games (, separated by |).
     - !mode A[ B[ C]]:  Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
                         A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
                         For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
-                        A, B, and/or C can also be the word "all" to specify all games.
+                        A, B, or C can also be the word "all" to specify all games.
     - !n
       !nyan:            Returns the last time there was a nyan, which is a bust >= 1000.00.
     - !getnyan:         Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
@@ -360,6 +360,11 @@ function mode(start, length) {
     }
 }
 
+function probability(cashout) {
+    /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    return '~' + round(99 / (1.01 * (cashout - 0.01)), 3) + '%';
+}
+
 /*==================================
  Games management.
 ===================================*/
@@ -522,7 +527,7 @@ function crashPointFromHash(serverSeed) {
 
     /* Use the most significant 52-bit from the hash to calculate the crash point. */
     var h = parseInt(hash.slice(0,52/4),16);
-    var e = Math.pow(2,52);
+    var e = Math.pow(2, 52);
     return (Math.floor((100 * e - h) / (e - h))/100).toFixed(2);
 };
 
@@ -561,6 +566,10 @@ function loadScript(url){
 
     script.src = url;
     document.getElementsByTagName("head")[0].appendChild(script);
+}
+
+function round(value, decimals) {
+    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
 /*==================================
