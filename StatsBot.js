@@ -1,35 +1,40 @@
-/*
-   This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
+/* This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
 
    The following commands can be called by anyone:
-    - !med:                    Returns the median of the last 100 games.
+    - !med:                     Returns the median of the last 100 games.
     - !med A[ B[ C]]
-    - !median A[ B[ C]]:       Returns the median(s) of the last A[, B[, and C]] games.
-                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
-                               For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-                               A, B, or C can also be the word "all" to specify all games.
-    - !avg:                    Returns the average of the last 100 games.
+    - !median A[ B[ C]]:        Returns the median(s) of the last A[, B[, and C]] games.
+                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
+                                A, B, or C can also be the word "all" to specify all games.
+    - !avg:                     Returns the average of the last 100 games.
     - !avg A[ B[ C]]
-    - !avgerage A[ B[ C]]:     Returns the average(s) of the last A[, B[, and C]] games.
-                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
-                               For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
-                               A, B, or C can also be the word "all" to specify all games.
-    - !mode:                   Returns the mode(s) of the last 100 games (, separated by |).
-    - !mode A[ B[ C]]:         Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
-                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
-                               For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
-                               A, B, or C can also be the word "all" to specify all games.
+    - !avgerage A[ B[ C]]:      Returns the average(s) of the last A[, B[, and C]] games.
+                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+                                A, B, or C can also be the word "all" to specify all games.
+    - !mode:                    Returns the mode(s) of the last 100 games (, separated by |).
+    - !mode A[ B[ C]]:          Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
+                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
+                                A, B, or C can also be the word "all" to specify all games.
     - !prob D[ E[ F]]          
-      !probability D[ E[ F]]:  Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                               D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
-                               For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
+      !probability D[ E[ F]]:   Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
+                                For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
+    - !bust D[ E[ F]]:          Returns the last bust including or below the provided value(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
+                                For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
+    - !streak D[ E[ F]]:        Returns the maximum streak seen for the given bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+    - !streak Dx#[ Ex#[ Fx#]]:  Returns the last streak of length # (max 20 each) seen for the given bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
     - !n
-      !nyan:                   Returns the last time there was a nyan, which is a bust >= 1000.00.
-    - !getnyan:                Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
-    - !help:                   Provides a link to this script in github for review of these comments.
-    - !helpline:               Provides information about the National Problem Gambling Helpline.
+      !nyan:                    Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !getnyan:                 Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
+    - !help:                    Provides a link to this script in github for review of these comments.
+    - !helpline:                Provides information about the National Problem Gambling Helpline.
     - !donate
-      !tip:                    Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+      !tip:                     Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     
@@ -44,7 +49,7 @@
  Request management.
 ===================================*/
 
-engine.on("msg", function(data) {
+engine.on("msg", function (data) {
     if (data.message) {
         if (data.username == _scriptUsername) {
             if (data.message == "!stop") {
@@ -82,8 +87,8 @@ engine.on("msg", function(data) {
             engine.chat("Yeah, I saw nyan around here. It was around " + (_game.id - nyan) + " games ago." + ". Who's askin'?");
         }
         else if (data.message == "!getnyan") {
-           var nyan = getnyan();
-           engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
+            var nyan = getnyan();
+            engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
@@ -97,14 +102,20 @@ engine.on("msg", function(data) {
         else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
             processByBust(data.message, probability);
         }
+        else if (data.message.startsWith("!bust")) {
+            processbyBust(data.message, bust);
+        }
+        else if (data.message.startsWith("!streak")) {
+            processByBust(data.message, streak);
+        }
     }
 });
 
 function processByLength(message, action) {
     /* Get the lengths that come after the command. */
-    var lengths = message.split(" ").filter(function(ii) { return ii; });
+    var lengths = message.split(" ").filter(function (ii) { return ii; });
     lengths = lengths.slice(1);
-    
+
     /* Check input. */
     if (lengths.length == 0) {
         /* Default to 100 games. */
@@ -114,7 +125,7 @@ function processByLength(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
-    
+
     /* Check for invalid arguments. */
     for (var ii = 0; ii < lengths.length; ii++) {
         var text = lengths[ii];
@@ -151,11 +162,11 @@ function processByLength(message, action) {
             }
         }
     }
-    
+
     /* Process request. */
     var results = [];
     var response = "";
-    
+
     for (var ii = 0; ii < lengths.length; ii++) {
         var text = lengths[ii];
         response += text + " ";
@@ -165,16 +176,16 @@ function processByLength(message, action) {
         if (lengths[ii].indexOf("x") > 1) {
             sets = parseInt(lengths[ii].split("x")[1]);
         }
-        
+
         var result = "";
         for (var jj = 0; jj < sets; jj++) {
-            result += action(length*jj, length);
+            result += action(length * jj, length);
             result += ", ";
         }
         result = result.substring(0, result.length - 2); /* Trim final comma. */
         results.push(result);
     }
-    
+
     /* Print result. */
     var response = response.trim() + ":";
     for (var ii = 0; ii < results.length; ii++) {
@@ -186,9 +197,9 @@ function processByLength(message, action) {
 
 function processByBust(message, action) {
     /* Get the cashouts that come after the command. */
-    var cashouts = message.split(" ").filter(function(ii) { return ii; });
+    var cashouts = message.split(" ").filter(function (ii) { return ii; });
     cashouts = cashouts.slice(1);
-    
+
     /* Check input. */
     if (cashouts.length == 0) {
         /* Default to 2x. */
@@ -198,11 +209,11 @@ function processByBust(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
-    
+
     /* Check for invalid arguments. */
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
-        
+
         var cashout;
         if (text.startsWith("<") || text.startsWith(">")) {
             cashout = parseFloat(text.substring(1));
@@ -210,7 +221,7 @@ function processByBust(message, action) {
         else {
             cashout = parseFloat(text);
         }
-        
+
         if (isNaN(cashout)) { /* Check for NaN. */
             engine.chat("Wrong format: " + text);
             return;
@@ -238,17 +249,17 @@ function processByBust(message, action) {
             }
         }
     }
-    
+
     /* Process request. */
     var results = [];
     var response = "";
-    
+
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
         response += text + " ";
         results.push(action(text)); /* Let the action interpret the x#. */
     }
-    
+
     /* Print result. */
     var response = response.trim() + ":";
     for (var ii = 0; ii < results.length; ii++) {
@@ -278,7 +289,7 @@ function getnyan() {
 function median(start, length) {
     try {
         var local = _games.slice(start, start + length);
-        local.sort(function(a, b) { return a.bust - b.bust; });
+        local.sort(function (a, b) { return a.bust - b.bust; });
 
         var point = Math.floor(length / 2);
         if (length % 2) { /* Exact median. */
@@ -323,19 +334,17 @@ function mode(start, length) {
             else
                 modeMap[el]++;
 
-            if (modeMap[el] > maxCount)
-            {
+            if (modeMap[el] > maxCount) {
                 maxEl = [el];
                 maxCount = modeMap[el];
             }
-            else if (modeMap[el] == maxCount)
-            {
+            else if (modeMap[el] == maxCount) {
                 maxEl.push(el);
             }
         }
-        
-        maxEl.sort(function(a, b) { return a - b; });
-        
+
+        maxEl.sort(function (a, b) { return a - b; });
+
         var result = maxEl[0] + "x";
         for (var ii = 1; ii < maxEl.length; ii++) {
             result += "|" + maxEl[ii] + "x";
@@ -356,22 +365,114 @@ function probability(cashout) {
         }
         cashout = cashout.substring(1);
     }
-    
+
     var value = parseFloat(cashout);
     var prob = 99 / (1.01 * (parseFloat(cashout) - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
-    
+
     /* Check for inversion. */
     if (invert) {
         prob = 100 - prob;
     }
-    
+
     /* Check for streak. */
     if (cashout.indexOf("x") > 0) {
         var streak = parseInt(cashout.split("x")[1]);
         prob = Math.pow(prob / 100.0, streak) * 100.0;
     }
-    
+
     return '~' + round(prob, 3) + '%';
+}
+
+function bust(cashout) {
+    var invert = false;
+    if (cashout.startsWith("<") || cashout.startsWith(">")) {
+        if (cashout.startsWith("<")) {
+            invert = true;
+        }
+        cashout = cashout.substring(1);
+    }
+
+    var value = parseFloat(cashout);
+    var find = 1;
+    if (cashout.indexOf("x") > 0) {
+        find = parseInt(cashout.split("x")[1]);
+    }
+
+    var result = "";
+    var found = 0;
+    for (var ii = 0; ii < _games.length; ii++) {
+        var game = _games[ii];
+        if ((invert && game.bust < value) || (!invert && game.bust >= value)) {
+            if (result) {
+                result += ", ";
+            }
+            result += (_game.id - game.id) + " games ago (" + game.bust + "x)";
+            found++;
+            if (found >= find) {
+                break;
+            }
+        }
+    }
+    if (!result) {
+        result = "never seen";
+    }
+    return result;
+}
+
+function streak(cashout) {
+    var invert = false;
+    if (cashout.startsWith("<") || cashout.startsWith(">")) {
+        if (cashout.startsWith("<")) {
+            invert = true;
+        }
+        cashout = cashout.substring(1);
+    }
+
+    var value = parseFloat(cashout);
+    var find;
+    if (cashout.indexOf("x") > 0) {
+        find = parseInt(cashout.split("x")[1]);
+    }
+
+    var found = [];
+    var check = [];
+    for (var ii = 0; ii < _games.length; ii++) {
+        var game = _games[ii];
+        if ((invert && game.bust < value) || (!invert && game.bust >= value)) {
+            check.push(game);
+            if (check.length > found.length) {
+                found = check.slice(0); /* Copy the values, not the reference. */
+            }
+            if (find && found.length >= find) {
+                break;
+            }
+        }
+    }
+
+    /* Start from the first game. */
+    found.reverse();
+
+    /* List all the games. */
+    var result = "";
+    for (var ii = 0; ii < found.length; ii++) {
+        if (result) {
+            result += ", ";
+        }
+        result += found[ii].bust;
+    }
+
+    /* Report back. */
+    if (find && found.length >= find) {
+        result = "seen " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        return result;
+    }
+    else if (!find) {
+        result = "seen " + found.length + " streak " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        return result;
+    }
+    else {
+        return "never seen";
+    }
 }
 
 /*==================================
@@ -383,7 +484,7 @@ var _game;
 var _games = getCachedResults();
 var _nyan;
 
-engine.on("game_crash", function(data) {
+engine.on("game_crash", function (data) {
     if (_game) {
         _game.bust = data.game_crash / 100.0;
         if (_games[0].id < (_game.id - 1)) {
@@ -394,12 +495,12 @@ engine.on("game_crash", function(data) {
             for (var id = _game.id - 1; id > _games[0].id; id--) {
                 var gameHash = genGameHash(lastHash);
                 var gameCrash = crashPointFromHash(gameHash);
-                
+
                 var current = {};
                 current.id = id;
                 current.bust = gameCrash;
                 missing.push(current);
-                
+
                 lastHash = gameHash;
             }
             _games = concatArrays(missing, _games);
@@ -417,13 +518,19 @@ engine.on("game_crash", function(data) {
                 engine.chat("Script ready. Ask me anything.");
             }
         }
-        
+
         if (_game.bust >= 1000.00) {
             _nyan = _game.id;
         }
+        else if (_game.bust >= 900.00) {
+            engine.chat("Ooh, so close!");
+        }
+        else if (_game.bust == 0.00) {
+            engine.chat("Ouch..");
+        }
     }
 });
-engine.on("game_starting", function(data) {
+engine.on("game_starting", function (data) {
     _game = {};
     _game.id = data.game_id;
 });
@@ -476,12 +583,12 @@ var _maxCached;
 
 function getCachedResults() {
     var cached = [];
-    
+
     /* Pull remotely-stored results. */
     var csv = new XMLHttpRequest();
     csv.open("GET", "https://corecompetency.github.io/RaiGamesScripts/Results.csv", false); /* Block, don't do this asynchronously. */
     csv.send(null);
-    var lines = csv.responseText.split("\n").filter(function(ii) { return ii; });
+    var lines = csv.responseText.split("\n").filter(function (ii) { return ii; });
     for (var ii = 0; ii < lines.length; ii++) {
         var line = lines[ii].split(",");
         var record = {};
@@ -490,7 +597,7 @@ function getCachedResults() {
         cached.push(record);
     }
     console.log("Pulled " + lines.length + " games from remote server.");
-    
+
     /* Pull locally-stored results. */
     var local = JSON.parse(localStorage.getItem("games"));
     if (local) {
@@ -498,7 +605,7 @@ function getCachedResults() {
         concatArrays(local.slice(0, length), cached);
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
-    
+
     _maxCached = cached[0].id;
     return cached;
 }
@@ -549,7 +656,7 @@ function divisible(hash, mod) {
     var val = 0;
     var o = hash.length % 4;
     for (var i = o > 0 ? o - 4 : 0; i < hash.length; i += 4) {
-        val = ((val << 16) + parseInt(hash.substring(i, i+4), 16)) % mod;
+        val = ((val << 16) + parseInt(hash.substring(i, i + 4), 16)) % mod;
     }
 }
 
@@ -569,7 +676,7 @@ function concatArrays(first, second) {
     return result;
 }
 
-function loadScript(url){
+function loadScript(url) {
     var script = document.createElement("script")
     script.type = "text/javascript";
 
@@ -586,7 +693,7 @@ function round(value, decimals) {
 ===================================*/
 
 if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position) {
+    String.prototype.startsWith = function (searchString, position) {
         position = position || 0;
         return this.indexOf(searchString, position) === position;
     };
