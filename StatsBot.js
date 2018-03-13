@@ -5,23 +5,23 @@
     - !med:                    Returns the median of the last 100 games.
     - !med A[ B[ C]]
     - !median A[ B[ C]]:       Returns the median(s) of the last A[, B[, and C]] games.
-                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 each.
+                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
                                For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
                                A, B, or C can also be the word "all" to specify all games.
     - !avg:                    Returns the average of the last 100 games.
     - !avg A[ B[ C]]
     - !avgerage A[ B[ C]]:     Returns the average(s) of the last A[, B[, and C]] games.
-                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
                                For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
                                A, B, or C can also be the word "all" to specify all games.
     - !mode:                   Returns the mode(s) of the last 100 games (, separated by |).
     - !mode A[ B[ C]]:         Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
-                               A, B, and C can also be specified in the format AxS, where S is the number of sets of A to go back, max 5 (each).
+                               A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
                                For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
                                A, B, or C can also be the word "all" to specify all games.
     - !prob D[ E[ F]]          
       !probability D[ E[ F]]:  Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                               D, E, and F can also be specified in the format DxS, where S is the number of times in a row D appears, max 20 (each).
+                               D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
                                For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
     - !n
       !nyan:                   Returns the last time there was a nyan, which is a bust >= 1000.00.
@@ -168,7 +168,7 @@ function processByLength(message, action) {
         
         var result = "";
         for (var jj = 0; jj < sets; jj++) {
-            result += target(length*jj, length);
+            result += action(length*jj, length);
             result += ", ";
         }
         result = result.substring(0, result.length - 2); /* Trim final comma. */
@@ -246,20 +246,7 @@ function processByBust(message, action) {
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
         response += text + " ";
-        var cashout = parseFloat(text);
-
-        var streak = 1;
-        if (cashouts[ii].indexOf("x") > 1) {
-            streak = parseFloat(cashouts[ii].split("x")[1]);
-        }
-        
-        var result = "";
-        for (var jj = 0; jj < sets; jj++) {
-            result += target(cashout*jj);
-            result += ", ";
-        }
-        result = result.substring(0, result.length - 2); /* Trim final comma. */
-        results.push(result);
+        results.push(action(text)); /* Let the action interpret the x#. */
     }
     
     /* Print result. */
@@ -288,7 +275,7 @@ function getnyan() {
     return _nyan;
 }
 
-function med(start, length) {
+function median(start, length) {
     try {
         var local = _games.slice(start, start + length);
         local.sort(function(a, b) { return a.bust - b.bust; });
@@ -308,7 +295,7 @@ function med(start, length) {
     }
 }
 
-function avg(start, length) {
+function average(start, length) {
     try {
         var sum = 0;
         for (var ii = start; ii < start + length; ii++) {
@@ -371,17 +358,17 @@ function probability(cashout) {
     }
     
     var value = parseFloat(cashout);
-    var prob = 99 / (1.01 * (cashout - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    var prob = 99 / (1.01 * (parseFloat(cashout) - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
     
     /* Check for inversion. */
     if (invert) {
-        prob = 1 - prob;
+        prob = 100 - prob;
     }
     
     /* Check for streak. */
-    if (text.indexOf("x") > 0) {
+    if (cashout.indexOf("x") > 0) {
         var streak = parseInt(cashout.split("x")[1]);
-        prob = Math.pow(prob, streak);
+        prob = Math.pow(prob / 100.0, streak) * 100.0;
     }
     
     return '~' + round(prob, 3) + '%';
