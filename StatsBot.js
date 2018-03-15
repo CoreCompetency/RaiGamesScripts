@@ -86,12 +86,12 @@ engine.on("msg", function (data) {
             return;
         }
         else if (data.message == "!n" || data.message == "!nyan") {
-            var nyan = getnyan();
-            engine.chat("Yeah, I saw nyan around here. It was around " + (_game.id - nyan) + " games ago." + ". Who's askin'?");
+            var nyan = getNyanMessage();
+            engine.chat(nyan);
         }
         else if (data.message == "!getnyan") {
-            var nyan = getnyan();
-            engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
+            var nyan = getNyan();
+            engine.chat("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
@@ -286,17 +286,53 @@ function processByBust(message, action) {
  Calculations for requests.
 ===================================*/
 
-function getnyan() {
+function getNyan() {
     if (!_nyan) {
+        var cached = localStorage.getItem("nyan", _nyan);
         for (var ii = 0; ii < _games.length; ii++) {
             var current = _games[ii];
             if (current.bust >= 1000.00) {
-                _nyan = current.id;
+                _nyan = {
+                    id: current.id
+                };
                 break;
             }
         }
+        if (cached.id == _nyan.id) {
+            _nyan = cached;
+        }
     }
     return _nyan;
+}
+
+function getNyanMessage() {
+    var nyan = getNyan();
+    var message = "Yeah, I saw nyan around here. It was around " + (_game.id - nyan.id) + " games ago.."
+    
+    if (nyan.time) {
+        var current = utcDate();
+        var minutes = Math.floor((current - nyan.time) / 60000);
+        minutes = Math.round(minutes / 5.0) * 5; /* Round to the nearest 5 minutes. */
+        if (minutes >= 5) {
+            var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
+            if (hours < 1) {
+                message += " maybe " + minutes + ".";
+            }
+            else if (hours < 2) {
+                message += " maybe an hour";
+                if (hours > 1) {
+                    message += " and a half"
+                }
+                message += "."
+            }
+            else {
+                message += " maybe " + hours + " hours.";
+            }
+        }
+    }
+    
+    var message += " Who's askin'?";
+    return message;
 }
 
 function median(start, length) {
@@ -537,7 +573,11 @@ engine.on("game_crash", function (data) {
         }
 
         if (_game.bust >= 1000.00) {
-            _nyan = _game.id;
+            _nyan = {
+                id: _game.id,
+                time: utcDate()
+            };
+            localStorage.setItem("nyan", _nyan);
         }
         else if (_game.bust >= 900.00) {
             engine.chat("Ooh, so close!");
@@ -607,7 +647,7 @@ var _scriptUsername = engine.getUsername();
  Cache management.
 ===================================*/
 
-var _maxCached;
+var _maxServerCache;
 
 function getCachedResults() {
     var cached = [];
@@ -625,6 +665,8 @@ function getCachedResults() {
         cached.push(record);
     }
     console.log("Pulled " + lines.length + " games from remote server.");
+    
+    _maxServerCache = cached[0].id;
 
     /* Pull locally-stored results. */
     var local = JSON.parse(localStorage.getItem("games"));
@@ -635,12 +677,11 @@ function getCachedResults() {
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
 
-    _maxCached = cached[0].id;
     return cached;
 }
 
 function cacheResults() {
-    var slice = _games.slice(0, _games[0].id - _maxCached);
+    var slice = _games.slice(0, _games[0].id - _maxServerCache);
     localStorage.setItem("games", JSON.stringify(slice));
     console.log("Cached " + slice.length + " games in localStorage.");
 }
