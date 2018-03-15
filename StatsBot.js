@@ -134,7 +134,7 @@ function processByLength(message, action) {
     }
     
     /* Clear duplicates. */
-    cashouts = unique(cashouts);
+    lengths = unique(lengths);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < lengths.length; ii++) {
@@ -298,7 +298,7 @@ function getNyan() {
                 break;
             }
         }
-        if (cached.id == _nyan.id) {
+        if (cached && cached.id == _nyan.id) {
             _nyan = cached;
         }
     }
