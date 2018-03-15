@@ -272,7 +272,7 @@ if (checkVariables()) {
     }
     
     function bust(data) {
-        var bust = data.game_crash / 100.0
+        var bust = data.game_crash / 100.0;
         if (tracking.skipping) {
             tracking.skipped++;
             console.log("Skipped game with bust at " + bust + "x");
