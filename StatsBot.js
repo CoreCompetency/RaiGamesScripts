@@ -78,6 +78,9 @@ engine.on("msg", function (data) {
         else if (data.message.toLowerCase().indexOf(_scriptUsername.toLowerCase()) >= 0) {
             snark();
         }
+        else if (data.username != _scriptUsername && data.message.toLowerCase().indexOf("shiba") >= 0) {
+            shibaSnark();
+        }
         else if (!_caughtUp) {
             /* Script isn't ready to respond to the requests below yet. */
             return;
@@ -103,13 +106,17 @@ engine.on("msg", function (data) {
             processByBust(data.message, probability);
         }
         else if (data.message.startsWith("!bust")) {
-            processbyBust(data.message, bust);
+            processByBust(data.message, bust);
         }
         else if (data.message.startsWith("!streak")) {
             processByBust(data.message, streak);
         }
     }
 });
+
+/*==================================
+ Request processing.
+===================================*/
 
 function processByLength(message, action) {
     /* Get the lengths that come after the command. */
@@ -140,7 +147,7 @@ function processByLength(message, action) {
             }
         }
         else if (length < 1) {
-            engine.chat("Please target at least one game: " + text);
+            engine.chat("Please target at least 1 game: " + text);
             return;
         }
         else if (text.indexOf("x") > 0) {
@@ -156,7 +163,7 @@ function processByLength(message, action) {
                     return;
                 }
                 else if (sets < 1 || sets > 5) {
-                    engine.chat("Please target between one and five sets: " + text);
+                    engine.chat("Please target between 1 and 5 sets: " + text);
                     return;
                 }
             }
@@ -227,7 +234,7 @@ function processByBust(message, action) {
             return;
         }
         else if (cashout < 1) {
-            engine.chat("Please target at least one cashout: " + text);
+            engine.chat("Please target a cashout of at least 1: " + text);
             return;
         }
         else if (text.indexOf("x") > 0) {
@@ -243,7 +250,7 @@ function processByBust(message, action) {
                     return;
                 }
                 else if (streak < 1 || streak > 20) {
-                    engine.chat("Please target a streak between one and 20: " + text);
+                    engine.chat("Please target a streak between 1 and 20: " + text);
                     return;
                 }
             }
@@ -447,6 +454,10 @@ function streak(cashout) {
                 break;
             }
         }
+        else {
+            /* Clear what we're tracking. */
+            check = [];
+        }
     }
 
     /* Start from the first game. */
@@ -569,6 +580,17 @@ function snark() {
     engine.chat(_snarks[index]);
 }
 
+var _shibaSnarks = [];
+_shibaSnarks.push("What, I'm not good enough for you?");
+_shibaSnarks.push("Shiba who?");
+_shibaSnarks.push("We don't talk about Shiba.");
+_shibaSnarks.push("shiba ded");
+_shibaSnarks.push("A moment of silence for our dear, departed friend, Shiba.");
+function shibaSnark() {
+    var index = Math.floor(Math.random() * _shibaSnarks.length);
+    engine.chat(_shibaSnarks[index]);
+}
+
 /*==================================
  General-use variables.
 ===================================*/
@@ -602,7 +624,8 @@ function getCachedResults() {
     var local = JSON.parse(localStorage.getItem("games"));
     if (local) {
         var length = local[0].id - cached[0].id;
-        concatArrays(local.slice(0, length), cached);
+        local = local.slice(0, length); /* Only pull the missing games.  This handles the case where the remote server cache is updated. */
+        concatArrays(local, cached);
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
 
@@ -658,6 +681,7 @@ function divisible(hash, mod) {
     for (var i = o > 0 ? o - 4 : 0; i < hash.length; i += 4) {
         val = ((val << 16) + parseInt(hash.substring(i, i + 4), 16)) % mod;
     }
+    return val === 0;
 }
 
 /*==================================
