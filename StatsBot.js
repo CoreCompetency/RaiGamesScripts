@@ -180,8 +180,8 @@ function processByLength(message, action) {
         var length = parseInt(text);
 
         var sets = 1;
-        if (lengths[ii].indexOf("x") > 1) {
-            sets = parseInt(lengths[ii].split("x")[1]);
+        if (text.indexOf("x") > 0) {
+            sets = parseInt(text.split("x")[1]);
         }
 
         var result = "";
