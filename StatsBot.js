@@ -102,6 +102,12 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!mode")) {
             processByLength(data.message, mode);
         }
+        else if (data.message.startsWith("!min") || data.message.startsWith("!minimum")) {
+            processByLength(data.message, min);
+        }
+        else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
+            processByLength(data.message, max);
+        }
         else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
             processByBust(data.message, probability);
         }
@@ -414,6 +420,46 @@ function mode(start, length) {
             result += "|" + maxEl[ii] + "x";
         }
         return result + " (" + maxCount + " times)";
+    }
+    catch (err) {
+        /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
+        return "NaN";
+    }
+}
+
+function min(start, length) {
+    try {
+        var value;
+        for (var ii = start; ii < start + length; ii++) {
+            var bust = _games[ii].bust;
+            if (value == null) {
+                value = bust;
+            }
+            else if (bust < value) {
+                value = bust;
+            }
+        }
+        return value + "x";
+    }
+    catch (err) {
+        /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
+        return "NaN";
+    }
+}
+
+function max(start, length) {
+    try {
+        var value;
+        for (var ii = start; ii < start + length; ii++) {
+            var bust = _games[ii].bust;
+            if (value == null) {
+                value = bust;
+            }
+            else if (bust > value) {
+                value = bust;
+            }
+        }
+        return value + "x";
     }
     catch (err) {
         /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
