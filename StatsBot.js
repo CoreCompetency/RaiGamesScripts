@@ -458,7 +458,7 @@ function min(start, length) {
                 found = game;
             }
         }
-        return "seen " + found.bust + "x in game " + found.id;
+        return found.bust + "x (game " + found.id + ");
     }
     catch (err) {
         /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
@@ -478,7 +478,7 @@ function max(start, length) {
                 found = game;
             }
         }
-        return "seen " + found.bust + "x in game " + found.id;
+        return found.bust + "x (game " + found.id + ");
     }
     catch (err) {
         /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
