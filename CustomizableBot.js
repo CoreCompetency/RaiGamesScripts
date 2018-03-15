@@ -90,31 +90,31 @@ var testMode = true;
 
 var base = {
     bet: 1,
-    cashout: 1.1
+    cashout: 1.13
 }
 
 var autoAdjustBaseBet = {
     enabled: false,
-    percentageOfBalance: 0.01
+    percentageOfBalance: 0.001
 }
 
 var max = {
-    losses: null,
+    losses: 5,
     wins: null,
-    totalLoss: null,
-    totalWin: null
+    totalLoss: 50,
+    totalWin: 100
 };
 
 var onLose = {
     reset: false,
-    multiplyBet: 1.9,
+    multiplyBet: 1.0,
     multiplyCashout: 1.0,
     increaseBet: 0.0,
     increaseCashout: 0.00,
     skip: {
-        games: 1,
-        onlyIfBustAbove: null,
-        onlyIfBustBelow: null
+        games: 0,
+        onlyIfBustAbove: 100000.00,
+        onlyIfBustBelow: 1.00
     }
 };
 
@@ -161,7 +161,7 @@ nyanChase.baseBet = Math.round(nyanChase.baseBet); /* Don't want this rounding d
 
 if (checkVariables()) {
     var testFramework = {
-        balance: 2.44,
+        balance: 1000,
         playing: false
     }
 
@@ -555,11 +555,11 @@ function addTestBalance(value) {
 
 function reset() {
     if (autoAdjustBaseBet.enabled) {
-        var newBaseBet = Math.floor(getBalance() * autoAdjustBaseBet.percentageOfBalance);    	
-		if (newBaseBet < 1) {
-			newBaseBet = 1;
-		}
-		if (newBaseBet != base.bet) {
+        var newBaseBet = Math.floor(getBalance() * autoAdjustBaseBet.percentageOfBalance);
+        if (newBaseBet < 1) {
+            newBaseBet = 1;
+        }
+        if (newBaseBet != base.bet) {
             base.bet = newBaseBet;
             console.log("Automatically adjusted base bet to " + base.bet);
         }
