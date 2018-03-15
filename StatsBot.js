@@ -448,17 +448,17 @@ function mode(start, length) {
 
 function min(start, length) {
     try {
-        var value;
+        var found;
         for (var ii = start; ii < start + length; ii++) {
-            var bust = _games[ii].bust;
-            if (value == null) {
-                value = bust;
+            var game = _games[ii];
+            if (found == null) {
+                found = game;
             }
-            else if (bust < value) {
-                value = bust;
+            else if (parseFloat(game.bust) < parseFloat(found.bust)) {
+                found = game;
             }
         }
-        return value + "x";
+        return "seen " + found.bust + "x in game " + found.id;
     }
     catch (err) {
         /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
@@ -468,17 +468,17 @@ function min(start, length) {
 
 function max(start, length) {
     try {
-        var value;
+        var found;
         for (var ii = start; ii < start + length; ii++) {
-            var bust = _games[ii].bust;
-            if (value == null) {
-                value = bust;
+            var game = _games[ii];
+            if (found == null) {
+                found = game;
             }
-            else if (bust > value) {
-                value = bust;
+            else if (parseFloat(game.bust) > parseFloat(found.bust)) {
+                found = game;
             }
         }
-        return value + "x";
+        return "seen " + found.bust + "x in game " + found.id;
     }
     catch (err) {
         /* If an input comes in that takes us out of the bounds of the data available, return NaN. */
