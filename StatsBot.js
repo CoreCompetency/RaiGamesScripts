@@ -1,23 +1,41 @@
 /* This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
 
    The following commands can be called by anyone:
-    - !med:                     Returns the median of the last 100 games.
+    - !med
+    - !median:                  Returns the median of the last 100 games.
     - !med A[ B[ C]]
     - !median A[ B[ C]]:        Returns the median(s) of the last A[, B[, and C]] games.
                                 A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
                                 For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
                                 A, B, or C can also be the word "all" to specify all games.
-    - !avg:                     Returns the average of the last 100 games.
+    - !avg
+    - !average:                 Returns the average of the last 100 games.
     - !avg A[ B[ C]]
     - !avgerage A[ B[ C]]:      Returns the average(s) of the last A[, B[, and C]] games.
                                 A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
                                 For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+                                A, B, or C can also be the word "all" to specify all games.
+    - !min
+    - !minimum:                 Returns the lowest bust of the last 100 games.
+    - !min A[ B[ C]]
+    - !minimum A[ B[ C]]:       Returns the lowest bust of the last A[, B[, and C]] games.
+                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
+                                A, B, or C can also be the word "all" to specify all games.
+    - !max
+    - !maximum:                 Returns the highest bust of the last 100 games.
+    - !max A[ B[ C]]
+    - !maximum A[ B[ C]]:       Returns the highest bust of the last A[, B[, and C]] games.
+                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
                                 A, B, or C can also be the word "all" to specify all games.
     - !mode:                    Returns the mode(s) of the last 100 games (, separated by |).
     - !mode A[ B[ C]]:          Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
                                 A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
                                 For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
                                 A, B, or C can also be the word "all" to specify all games.
+    - !prob
+      !probability:             Returns the probability of a bust of 2.
     - !prob D[ E[ F]]          
       !probability D[ E[ F]]:   Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                 D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
