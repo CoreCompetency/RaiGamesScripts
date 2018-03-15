@@ -326,7 +326,22 @@ function getNyanMessage() {
                 message += "."
             }
             else {
-                message += " maybe " + hours + " hours.";
+                var days = Math.round(hours / 6) / 4; /* Include quarter days. */
+                if (days < 1) {
+                    message += " maybe " + hours + " hours.";
+                }
+                else if (days == 1) {
+                    message += " maybe a day.";
+                }
+                else {
+                    if (days >= 10) {
+                        days = Math.round(hours / 24); /* Only whole days. */
+                    }
+                    else if (days >= 3) {
+                        days = Math.round(hours / 12) / 2; /* Only half days. */
+                    }
+                    message += " maybe " + days + " days.";
+                }
             }
         }
     }
