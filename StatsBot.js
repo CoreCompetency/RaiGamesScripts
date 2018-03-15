@@ -55,6 +55,7 @@
       !tip:                     Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
+    Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
     
     The following commands can be called by the account running this script:
     - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
