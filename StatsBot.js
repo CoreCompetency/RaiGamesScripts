@@ -40,7 +40,7 @@
     
     The following commands can be called by the account running this script:
     - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
-                      This will also trigger in-memory games to get stored to localCache for the next run.
+                      This will also trigger in-memory games to get stored to localStorage for the next run.
     - !clearhistory:  This will clear games from the localStorage.  To be used if something gets messed up.
                       This will also trigger the script to stop so that the next run can fill localStorage again.
 */
@@ -86,12 +86,12 @@ engine.on("msg", function (data) {
             return;
         }
         else if (data.message == "!n" || data.message == "!nyan") {
-            var nyan = getnyan();
-            engine.chat("Yeah, I saw nyan around here. It was around " + (_game.id - nyan) + " games ago." + ". Who's askin'?");
+            var nyan = getNyanMessage();
+            engine.chat(nyan);
         }
         else if (data.message == "!getnyan") {
-            var nyan = getnyan();
-            engine.chat("Last nyan was in game " + nyan + ". View the game here: https://raigames.io/game/" + nyan);
+            var nyan = getNyan();
+            engine.chat("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
@@ -132,6 +132,9 @@ function processByLength(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
+    
+    /* Clear duplicates. */
+    lengths = unique(lengths);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < lengths.length; ii++) {
@@ -216,6 +219,9 @@ function processByBust(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
+    
+    /* Clear duplicates. */
+    cashouts = unique(cashouts);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < cashouts.length; ii++) {
@@ -280,17 +286,68 @@ function processByBust(message, action) {
  Calculations for requests.
 ===================================*/
 
-function getnyan() {
+function getNyan() {
     if (!_nyan) {
+        var cached = localStorage.getItem("nyan", _nyan);
         for (var ii = 0; ii < _games.length; ii++) {
             var current = _games[ii];
             if (current.bust >= 1000.00) {
-                _nyan = current.id;
+                _nyan = {
+                    id: current.id
+                };
                 break;
             }
         }
+        if (cached && cached.id == _nyan.id) {
+            _nyan = cached;
+        }
     }
     return _nyan;
+}
+
+function getNyanMessage() {
+    var nyan = getNyan();
+    var message = "Yeah, I saw nyan around here. It was around " + (_game.id - nyan.id) + " games ago.."
+    
+    if (nyan.time) {
+        var current = utcDate();
+        var minutes = Math.floor((current - nyan.time) / 60000);
+        minutes = Math.round(minutes / 5.0) * 5; /* Round to the nearest 5 minutes. */
+        if (minutes >= 5) {
+            var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
+            if (hours < 1) {
+                message += " maybe " + minutes + ".";
+            }
+            else if (hours < 2) {
+                message += " maybe an hour";
+                if (hours > 1) {
+                    message += " and a half"
+                }
+                message += "."
+            }
+            else {
+                var days = Math.round(hours / 6) / 4; /* Include quarter days. */
+                if (days < 1) {
+                    message += " maybe " + hours + " hours.";
+                }
+                else if (days == 1) {
+                    message += " maybe a day.";
+                }
+                else {
+                    if (days >= 10) {
+                        days = Math.round(hours / 24); /* Only whole days. */
+                    }
+                    else if (days >= 3) {
+                        days = Math.round(hours / 12) / 2; /* Only half days. */
+                    }
+                    message += " maybe " + days + " days.";
+                }
+            }
+        }
+    }
+    
+    message += " Who's askin'?";
+    return message;
 }
 
 function median(start, length) {
@@ -469,16 +526,16 @@ function streak(cashout) {
         if (result) {
             result += ", ";
         }
-        result += found[ii].bust;
+        result += found[ii].bust + "x";
     }
 
     /* Report back. */
     if (find && found.length >= find) {
-        result = "seen " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
     else if (!find) {
-        result = "seen " + found.length + " streak " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        result = "seen " + found.length + " streak " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
     else {
@@ -531,7 +588,11 @@ engine.on("game_crash", function (data) {
         }
 
         if (_game.bust >= 1000.00) {
-            _nyan = _game.id;
+            _nyan = {
+                id: _game.id,
+                time: utcDate()
+            };
+            localStorage.setItem("nyan", _nyan);
         }
         else if (_game.bust >= 900.00) {
             engine.chat("Ooh, so close!");
@@ -601,7 +662,7 @@ var _scriptUsername = engine.getUsername();
  Cache management.
 ===================================*/
 
-var _maxCached;
+var _maxServerCache;
 
 function getCachedResults() {
     var cached = [];
@@ -619,6 +680,8 @@ function getCachedResults() {
         cached.push(record);
     }
     console.log("Pulled " + lines.length + " games from remote server.");
+    
+    _maxServerCache = cached[0].id;
 
     /* Pull locally-stored results. */
     var local = JSON.parse(localStorage.getItem("games"));
@@ -629,12 +692,11 @@ function getCachedResults() {
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
 
-    _maxCached = cached[0].id;
     return cached;
 }
 
 function cacheResults() {
-    var slice = _games.slice(0, _games[0].id - _maxCached);
+    var slice = _games.slice(0, _games[0].id - _maxServerCache);
     localStorage.setItem("games", JSON.stringify(slice));
     console.log("Cached " + slice.length + " games in localStorage.");
 }
@@ -688,6 +750,14 @@ function divisible(hash, mod) {
  Helper functions.
 ===================================*/
 
+function loadScript(url) {
+    var script = document.createElement("script")
+    script.type = "text/javascript";
+
+    script.src = url;
+    document.getElementsByTagName("head")[0].appendChild(script);
+}
+
 function concatArrays(first, second) {
     var result = new Array(first.length + second.length);
     var secondStart = first.length;
@@ -700,16 +770,21 @@ function concatArrays(first, second) {
     return result;
 }
 
-function loadScript(url) {
-    var script = document.createElement("script")
-    script.type = "text/javascript";
-
-    script.src = url;
-    document.getElementsByTagName("head")[0].appendChild(script);
-}
-
 function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+}
+
+function unique(args) {
+    var seen = {};
+    return args.filter(function(item) {
+        var key = item.toLowerCase();
+        return seen.hasOwnProperty(key) ? false : (seen[key] = true);
+    })
+}
+
+function utcDate() {
+    var utc = new Date();
+    return new Date().setMinutes(utc.getMinutes() + utc.getTimezoneOffset());
 }
 
 /*==================================
