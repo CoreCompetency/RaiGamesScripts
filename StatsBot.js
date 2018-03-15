@@ -346,7 +346,7 @@ function getNyanMessage() {
         }
     }
     
-    var message += " Who's askin'?";
+    message += " Who's askin'?";
     return message;
 }
 
