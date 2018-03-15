@@ -40,7 +40,7 @@
     
     The following commands can be called by the account running this script:
     - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
-                      This will also trigger in-memory games to get stored to localCache for the next run.
+                      This will also trigger in-memory games to get stored to localStorage for the next run.
     - !clearhistory:  This will clear games from the localStorage.  To be used if something gets messed up.
                       This will also trigger the script to stop so that the next run can fill localStorage again.
 */
@@ -132,6 +132,9 @@ function processByLength(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
+    
+    /* Clear duplicates. */
+    cashouts = unique(cashouts);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < lengths.length; ii++) {
@@ -216,6 +219,9 @@ function processByBust(message, action) {
         engine.chat("Please limit to three arguments in one request.");
         return;
     }
+    
+    /* Clear duplicates. */
+    cashouts = unique(cashouts);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < cashouts.length; ii++) {
@@ -469,16 +475,16 @@ function streak(cashout) {
         if (result) {
             result += ", ";
         }
-        result += found[ii].bust;
+        result += found[ii].bust + "x";
     }
 
     /* Report back. */
     if (find && found.length >= find) {
-        result = "seen " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
     else if (!find) {
-        result = "seen " + found.length + " streak " + (_game.id - found[0].id) + " games ago (" + result + ")";
+        result = "seen " + found.length + " streak " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
     else {
@@ -688,6 +694,14 @@ function divisible(hash, mod) {
  Helper functions.
 ===================================*/
 
+function loadScript(url) {
+    var script = document.createElement("script")
+    script.type = "text/javascript";
+
+    script.src = url;
+    document.getElementsByTagName("head")[0].appendChild(script);
+}
+
 function concatArrays(first, second) {
     var result = new Array(first.length + second.length);
     var secondStart = first.length;
@@ -700,16 +714,21 @@ function concatArrays(first, second) {
     return result;
 }
 
-function loadScript(url) {
-    var script = document.createElement("script")
-    script.type = "text/javascript";
-
-    script.src = url;
-    document.getElementsByTagName("head")[0].appendChild(script);
-}
-
 function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+}
+
+function unique(args) {
+    var seen = {};
+    return args.filter(function(item) {
+        var key = item.toLowerCase();
+        return seen.hasOwnProperty(key) ? false : (seen[key] = true);
+    })
+}
+
+function utcDate() {
+    var utc = new Date();
+    return new Date().setMinutes(utc.getMinutes() + utc.getTimezoneOffset());
 }
 
 /*==================================
