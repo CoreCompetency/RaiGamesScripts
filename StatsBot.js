@@ -102,6 +102,15 @@ engine.on("msg", function (data) {
         else if (data.username != _scriptUsername && data.message.indexOf("shiba") >= 0) {
             shibaSnark();
         }
+        else if (data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
+            processJoking(data.message, jokingProbability125);
+        }
+        else if (data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
+            processJoking(data.message, jokingProbability4);
+        }
+        else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
+            processByBust(data.message, probability);
+        }
         else if (!_caughtUp) {
             /* Script isn't ready to respond to the requests below yet. */
             return;
@@ -128,15 +137,6 @@ engine.on("msg", function (data) {
         }
         else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
             processByLength(data.message, max);
-        }
-        else if (data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
-            processJoking(data.message, jokingProbability125);
-        }
-        else if (data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
-            processJoking(data.message, jokingProbability4);
-        }
-        else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
-            processByBust(data.message, probability);
         }
         else if (data.message.startsWith("!bust joking125") || data.message.startsWith("!bust joking125")) {
             processJoking(data.message, jokingBust125);
@@ -686,9 +686,30 @@ function jokingProbability125(losses) {
     return "bust~" + round(p * 100.0, 5) + "%";
 }
 
+function jokingProbability4(losses) {
+    var p108 = (100 - prob(1.08)) / 100.0;
+    var p125 = (100 - prob(1.25)) / 100.0;
+    var p131 = (100 - prob(1.31)) / 100.0;
+    var p = p108 * p125 * p131;
+    if (losses > 3) {
+        var p133 = (100 - prob(1.33)) / 100.0;
+        p *= Math.pow(p133, losses - 3);
+    }
+    return "bust~" + round(p * 100.0, 5) + "%";
+}
+
 var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
+var _streak4 = [1.08, 1.25, 1.31, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33];
+
 function jokingBust125(losses) {
-    var streak = _streak125.slice(0, losses);
+    return jokingBust(_streak125.slice(0, losses));
+}
+
+function jokingBust4(losses) {
+    return jokingBust(_streak4.slice(0, losses));
+}
+
+function jokingBust(streak) {
     streak.reverse(); /* The order in which we'll come across the games. */
     
     var found = [];
@@ -727,14 +748,6 @@ function jokingBust125(losses) {
     else {
         return "never seen";
     }
-}
-
-function jokingProbability4(losses) {
-    
-}
-
-function jokingBust4(losses) {
-    
 }
 
 /*==================================
