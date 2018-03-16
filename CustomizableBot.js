@@ -56,7 +56,7 @@
    - custom:
        enabled:                  If this is true, the script will ignore the regular betting rules above and execute the strategy defined.
                                      On a win, the strategy will restart.  On a lose, the strategy will move onto the next entry.
-                                     If a string of loses causes the script to run out of strategy entries, the script will stop.
+                                     If a string of losses causes the script to run out of strategy entries, the script will stop.
                                      Use a null entry to identify a skipped game.
        strategy:                 Each entry in this array represents one bet in the custom strategy and should have a bet value and a cashout value.
                                      Null entries represent skipped games.  The first entry can't be null.
