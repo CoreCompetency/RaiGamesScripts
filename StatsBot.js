@@ -694,7 +694,7 @@ function jokingBust125(losses) {
     var found = [];
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if (parseFloat(game.bust) < streak[found.length]) {
+        if (game.bust < streak[found.length]) {
             found.push(game);
             if (found.length >= streak.length) {
                 break;
