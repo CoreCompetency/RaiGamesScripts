@@ -81,11 +81,13 @@ engine.on("msg", function (data) {
                 cacheResults();
                 engine.chat("Script shutting down.");
                 engine.stop();
+                return;
             }
             else if (data.message == "!clearhistory") {
                 clearCachedResults();
                 engine.chat("Script shutting down.");
                 engine.stop();
+                return;
             }
         }
         if (data.message == "!help") {
@@ -154,6 +156,9 @@ engine.on("msg", function (data) {
         }
         else if (data.message.startsWith("!streak")) {
             processByBust(data.message, streak);
+        }
+        else if (data.message.startsWith("!")) {
+            engine.chat("I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
         }
     }
 });
