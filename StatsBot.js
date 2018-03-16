@@ -50,7 +50,7 @@
     - !n
       !nyan:                    Returns the last time there was a nyan, which is a bust >= 1000.00.
     - !getnyan:                 Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
-    - !help:                    Provides a link to this script in github for review of these comments.
+    - !help:                    Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
     - !helpline:                Provides information about the National Problem Gambling Helpline.
     - !donate
       !tip:                     Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
@@ -85,6 +85,7 @@ engine.on("msg", function (data) {
         }
         if (data.message == "!help") {
             engine.chat("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
+            engine.chat("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
         }
         else if (data.message == "!helpline") {
             engine.chat("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
@@ -128,8 +129,20 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
             processByLength(data.message, max);
         }
+        else if (data.message.startsWith("!prob joking125")) {
+            processJoking(data.message, jokingProbability125);
+        }
+        else if (data.message.startsWith("!prob joking4")) {
+            processJoking(data.message, jokingProbability4);
+        }
         else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
             processByBust(data.message, probability);
+        }
+        else if (data.message.startsWith("!bust joking125")) {
+            processJoking(data.message, jokingBust125);
+        }
+        else if (data.message.startsWith("!bust joking4")) {
+            processJoking(data.message, jokingBust4);
         }
         else if (data.message.startsWith("!bust")) {
             processByBust(data.message, bust);
@@ -297,6 +310,136 @@ function processByBust(message, action) {
         var text = cashouts[ii];
         response += text + " ";
         results.push(action(text)); /* Let the action interpret the x#. */
+    }
+
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
+
+function processByBust(message, action) {
+    /* Get the cashouts that come after the command. */
+    var cashouts = message.split(" ").filter(function (ii) { return ii; });
+    cashouts = cashouts.slice(1);
+
+    /* Check input. */
+    if (cashouts.length == 0) {
+        /* Default to 2x. */
+        cashouts.push("2");
+    }
+    else if (cashouts.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Clear duplicates. */
+    cashouts = unique(cashouts);
+
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+
+        var cashout;
+        if (text.startsWith("<") || text.startsWith(">")) {
+            cashout = parseFloat(text.substring(1));
+        }
+        else {
+            cashout = parseFloat(text);
+        }
+
+        if (isNaN(cashout)) { /* Check for NaN. */
+            engine.chat("Wrong format: " + text);
+            return;
+        }
+        else if (cashout < 1) {
+            engine.chat("Please target a cashout of at least 1: " + text);
+            return;
+        }
+        else if (text.indexOf("x") > 0) {
+            var parts = text.split("x");
+            if (parts.length < 2) {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
+            else {
+                var streak = parseInt(parts[1]);
+                if (isNaN(streak)) {
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (streak < 1 || streak > 20) {
+                    engine.chat("Please target a streak between 1 and 20: " + text);
+                    return;
+                }
+            }
+        }
+    }
+
+    /* Process request. */
+    var results = [];
+    var response = "";
+
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+        response += text + " ";
+        results.push(action(text)); /* Let the action interpret the x#. */
+    }
+
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
+
+
+function processJoking(message, action) {
+    /* Get the losses that come after the command. */
+    var losses = message.split(" ").filter(function (ii) { return ii; });
+    losses = losses.slice(2);
+
+    /* Check input. */
+    if (losses.length == 0) {
+        /* Default to 5. */
+        losses.push("5");
+    }
+    else if (losses.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Clear duplicates. */
+    losses = unique(losses);
+
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < losses.length; ii++) {
+        var text = losses[ii];
+        var loss = parseFloat(text);
+        
+        if (isNaN(text)) { /* Check for NaN. */
+            engine.chat("Wrong format: " + text);
+            return;
+        }
+        else if (loss != Math.floor(loss) || loss < 3 || loss > 9) {
+            engine.chat("Please target a loss streak between 3 and 9: " + text);
+            return;
+        }
+    }
+
+    /* Process request. */
+    var results = [];
+    var response = "";
+
+    for (var ii = 0; ii < losses.length; ii++) {
+        var text = losses[ii];
+        response += text + " ";
+        results.push(action(text));
     }
 
     /* Print result. */
@@ -495,22 +638,20 @@ function probability(cashout) {
         }
         cashout = cashout.substring(1);
     }
-
-    var value = parseFloat(cashout);
-    var prob = 99 / (1.01 * (parseFloat(cashout) - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    var p = prob(parseFloat(cashout));
 
     /* Check for inversion. */
     if (invert) {
-        prob = 100 - prob;
+        p = 100 - p;
     }
 
     /* Check for streak. */
     if (cashout.indexOf("x") > 0) {
         var streak = parseInt(cashout.split("x")[1]);
-        prob = Math.pow(prob / 100.0, streak) * 100.0;
+        p = Math.pow(p / 100.0, streak) * 100.0;
     }
 
-    return '~' + round(prob, 3) + '%';
+    return "~" + round(p, 3) + "%";
 }
 
 function bust(cashout) {
@@ -607,6 +748,27 @@ function streak(cashout) {
     else {
         return "never seen";
     }
+}
+
+function jokingProbability125(losses) {
+    var p108 = (100 - prob(1.08)) / 100.0;
+    var p125 = (100 - prob(1.25)) / 100.0;
+    var p = p108 * Math.pow(p125, losses - 1);
+    return 'bust~' + round(p * 100.0, 5) + '%';
+}
+
+var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
+function jokingBust125(losses) {
+    var streak = _streak125.slice(losses);
+    streak.reverse(); /* The order in which we'll come across the games. */
+}
+
+function jokingProbability4(losses) {
+    
+}
+
+function jokingBust4(losses) {
+    
 }
 
 /*==================================
@@ -837,7 +999,7 @@ function concatArrays(first, second) {
 }
 
 function round(value, decimals) {
-    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+    return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
 }
 
 function unique(args) {
@@ -851,6 +1013,11 @@ function unique(args) {
 function utcDate() {
     var utc = new Date();
     return new Date().setMinutes(utc.getMinutes() + utc.getTimezoneOffset());
+}
+
+function prob(cashout) {
+    /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    return 99 / (1.01 * (parseFloat(cashout) - 0.01));
 }
 
 /*==================================
