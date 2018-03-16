@@ -70,6 +70,7 @@
 
 engine.on("msg", function (data) {
     if (data.message) {
+        data.message = data.message.toLowerCase(); /* Easier for downstream processing to do this in one place. */
         if (data.username == _scriptUsername) {
             if (data.message == "!stop") {
                 cacheResults();
@@ -95,10 +96,10 @@ engine.on("msg", function (data) {
         else if (data.message == "!tip") {
             engine.chat("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
         }
-        else if (data.message.toLowerCase().indexOf(_scriptUsername.toLowerCase()) >= 0) {
+        else if (data.message.indexOf(_scriptUsername.toLowerCase()) >= 0) {
             snark();
         }
-        else if (data.username != _scriptUsername && data.message.toLowerCase().indexOf("shiba") >= 0) {
+        else if (data.username != _scriptUsername && data.message.indexOf("shiba") >= 0) {
             shibaSnark();
         }
         else if (!_caughtUp) {
@@ -179,8 +180,9 @@ function processByLength(message, action) {
         var text = lengths[ii];
         var length = parseInt(text);
         if (isNaN(length)) { /* Check for NaN. */
-            if (text.toLowerCase() == "all") {
-                lengths[ii] = length = _games.length.toString();
+            if (text.indexOf("all") >= 0) {
+                length = _games.length.toString();
+                lengths[ii] = lengths[ii].replace("all", length);
             }
             else {
                 engine.chat("Wrong format: " + text);
@@ -274,8 +276,14 @@ function processByBust(message, action) {
         }
 
         if (isNaN(cashout)) { /* Check for NaN. */
-            engine.chat("Wrong format: " + text);
-            return;
+            if (text.indexOf("nyan") >= 0) {
+                cashout = 1000;
+                cashouts[ii] = cashouts[ii].replace("nyan", cashout);
+            }
+            else {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
         }
         else if (cashout < 1) {
             engine.chat("Please target a cashout of at least 1: " + text);
@@ -319,84 +327,6 @@ function processByBust(message, action) {
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
     engine.chat(response);
 }
-
-function processByBust(message, action) {
-    /* Get the cashouts that come after the command. */
-    var cashouts = message.split(" ").filter(function (ii) { return ii; });
-    cashouts = cashouts.slice(1);
-
-    /* Check input. */
-    if (cashouts.length == 0) {
-        /* Default to 2x. */
-        cashouts.push("2");
-    }
-    else if (cashouts.length > 3) {
-        engine.chat("Please limit to three arguments in one request.");
-        return;
-    }
-    
-    /* Clear duplicates. */
-    cashouts = unique(cashouts);
-
-    /* Check for invalid arguments. */
-    for (var ii = 0; ii < cashouts.length; ii++) {
-        var text = cashouts[ii];
-
-        var cashout;
-        if (text.startsWith("<") || text.startsWith(">")) {
-            cashout = parseFloat(text.substring(1));
-        }
-        else {
-            cashout = parseFloat(text);
-        }
-
-        if (isNaN(cashout)) { /* Check for NaN. */
-            engine.chat("Wrong format: " + text);
-            return;
-        }
-        else if (cashout < 1) {
-            engine.chat("Please target a cashout of at least 1: " + text);
-            return;
-        }
-        else if (text.indexOf("x") > 0) {
-            var parts = text.split("x");
-            if (parts.length < 2) {
-                engine.chat("Wrong format: " + text);
-                return;
-            }
-            else {
-                var streak = parseInt(parts[1]);
-                if (isNaN(streak)) {
-                    engine.chat("Wrong format: " + text);
-                    return;
-                }
-                else if (streak < 1 || streak > 20) {
-                    engine.chat("Please target a streak between 1 and 20: " + text);
-                    return;
-                }
-            }
-        }
-    }
-
-    /* Process request. */
-    var results = [];
-    var response = "";
-
-    for (var ii = 0; ii < cashouts.length; ii++) {
-        var text = cashouts[ii];
-        response += text + " ";
-        results.push(action(text)); /* Let the action interpret the x#. */
-    }
-
-    /* Print result. */
-    var response = response.trim() + ":";
-    for (var ii = 0; ii < results.length; ii++) {
-        response += " " + results[ii] + "; ";
-    }
-    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    engine.chat(response);
-}
-
 
 function processJoking(message, action) {
     /* Get the losses that come after the command. */
@@ -514,7 +444,7 @@ function getNyanMessage() {
         }
     }
     
-    message += " Who's askin'?";
+    message += " Who wants to know?";
     return message;
 }
 
