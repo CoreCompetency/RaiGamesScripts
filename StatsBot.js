@@ -8,6 +8,7 @@
                                 A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
                                 For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
                                 A, B, or C can also be the word "all" to specify all games.
+    - !mean
     - !avg
     - !average:                 Returns the average of the last 100 games.
     - !avg A[ B[ C]]
@@ -115,7 +116,7 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
         }
-        else if (data.message.startsWith("!avg") || data.message.startsWith("!average")) {
+        else if (data.message.startsWith("!mean") || data.message.startsWith("!avg") || data.message.startsWith("!average")) {
             processByLength(data.message, average);
         }
         else if (data.message.startsWith("!mode")) {
@@ -341,7 +342,7 @@ function getNyanMessage() {
         if (minutes >= 5) {
             var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
             if (hours < 1) {
-                message += " maybe " + minutes + ".";
+                message += " maybe " + minutes + " minutes.";
             }
             else if (hours < 2) {
                 message += " maybe an hour";
