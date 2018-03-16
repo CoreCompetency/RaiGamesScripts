@@ -405,7 +405,7 @@ function getNyan() {
 
 function getNyanMessage() {
     var nyan = getNyan();
-    var message = "Yeah, I saw nyan around here. It was around " + (_game.id - nyan.id) + " games ago.."
+    var message = "Yeah, I saw nyan around here. It was about " + (_game.id - nyan.id) + " games ago.."
     
     if (nyan.time) {
         var current = utcDate();
@@ -683,7 +683,7 @@ function jokingProbability125(losses) {
     var p108 = (100 - prob(1.08)) / 100.0;
     var p125 = (100 - prob(1.25)) / 100.0;
     var p = p108 * Math.pow(p125, losses - 1);
-    return 'bust~' + round(p * 100.0, 5) + '%';
+    return "bust~" + round(p * 100.0, 5) + "%";
 }
 
 var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
@@ -694,14 +694,15 @@ function jokingBust125(losses) {
     var found = [];
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if (game.bust < streak[found.length]) {
+        if (parseFloat(game.bust) < streak[found.length]) {
             found.push(game);
             if (found.length >= streak.length) {
                 break;
             }
         }
         else {
-            /* Clear what we're tracking. */
+            /* Back it up and start again. */
+            ii = ii - found.length;
             found = [];
         }
     }
