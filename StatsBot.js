@@ -1,58 +1,58 @@
 /* This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
 
    The following commands can be called by anyone:
-    - !med
-    - !median:                  Returns the median of the last 100 games.
-    - !med A[ B[ C]]
-    - !median A[ B[ C]]:        Returns the median(s) of the last A[, B[, and C]] games.
-                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
-                                For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-                                A, B, or C can also be the word "all" to specify all games.
-    - !avg
-    - !average:                 Returns the average of the last 100 games.
-    - !avg A[ B[ C]]
-    - !avgerage A[ B[ C]]:      Returns the average(s) of the last A[, B[, and C]] games.
-                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
-                                For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
-                                A, B, or C can also be the word "all" to specify all games.
-    - !min
-    - !minimum:                 Returns the lowest bust of the last 100 games.
-    - !min A[ B[ C]]
-    - !minimum A[ B[ C]]:       Returns the lowest bust of the last A[, B[, and C]] games.
-                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
-                                For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
-                                A, B, or C can also be the word "all" to specify all games.
-    - !max
-    - !maximum:                 Returns the highest bust of the last 100 games.
-    - !max A[ B[ C]]
-    - !maximum A[ B[ C]]:       Returns the highest bust of the last A[, B[, and C]] games.
-                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
-                                For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
-                                A, B, or C can also be the word "all" to specify all games.
-    - !mode:                    Returns the mode(s) of the last 100 games (, separated by |).
-    - !mode A[ B[ C]]:          Returns the mode(s) of the last A[, B[, and C]] games(, separated by |).
-                                A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
-                                For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
-                                A, B, or C can also be the word "all" to specify all games.
-    - !prob
-      !probability:             Returns the probability of a bust of 2.
-    - !prob D[ E[ F]]          
-      !probability D[ E[ F]]:   Returns the probability(ies) of (an) D[, E[, and F]] bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
-                                For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
-    - !bust D[ E[ F]]:          Returns the last bust including or below the provided value(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
-                                For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
-    - !streak D[ E[ F]]:        Returns the maximum streak seen for the given bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-    - !streak Dx#[ Ex#[ Fx#]]:  Returns the last streak of length # (max 20 each) seen for the given bust(s).  < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
+    - !med[ A[ B[ C]]]
+      !median[ A[ B[ C]]]:                  Returns the median(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
+                                            A, B, or C can also be the word "all" to specify all games.
+    - !mean[ A[ B[ C]]]
+      !avg[ A[ B[ C]]]
+      !average[ A[ B[ C]]]:                 Returns the average(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                            For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
+                                            A, B, or C can also be the word "all" to specify all games.
+    - !min[ A[ B[ C]]]
+      !minimum[ A[ B[ C]]]:                 Returns the lowest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
+                                            A, B, or C can also be the word "all" to specify all games.
+    - !max[ A[ B[ C]]]                        
+      !maximum[ A[ B[ C]]]:                 Returns the highest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
+                                            A, B, or C can also be the word "all" to specify all games.
+    - !mode[ A[ B[ C]]]:                    Returns the mode(s) of the last A[, B[, and C]] games(, separated by |), or the last 100 games if no arguments are provided.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                            For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
+                                            A, B, or C can also be the word "all" to specify all games.
+    - !prob[ D[ E[ F]]]
+      !probability[ D[ E[ F]]]:             Returns the probability(ies) of the given bust(s), or a bust of 2 if no arguments are provided.
+                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
+                                            For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
+    - !prob joking125[ G[ H[ I]]]
+      !probability joking125[ G[ H[ I]]]:   Returns the probability that Joking313's 1.25x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
+    - !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
+                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
+                                            For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
+    - !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
+    - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
+                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+    - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
+                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                            For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
     - !n
-      !nyan:                    Returns the last time there was a nyan, which is a bust >= 1000.00.
-    - !getnyan:                 Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
-    - !help:                    Provides a link to this script in github for review of these comments.
-    - !helpline:                Provides information about the National Problem Gambling Helpline.
+      !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !getnyan:                             Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
+    - !help:                                Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
+    - !helpline:                            Provides information about the National Problem Gambling Helpline.
     - !donate
-      !tip:                     Provides information for monetary thanks for running the script.  (If you are running your own copy of the script, you may want to replace the address with your own.)
+      !tip:                                 Provides information for monetary thanks for running the script.
+                                            If you are running your own copy of the script, you may want to replace the nano address with your own.
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
@@ -84,6 +84,7 @@ engine.on("msg", function (data) {
         }
         if (data.message == "!help") {
             engine.chat("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
+            engine.chat("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
         }
         else if (data.message == "!helpline") {
             engine.chat("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
@@ -115,7 +116,7 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
         }
-        else if (data.message.startsWith("!avg") || data.message.startsWith("!average")) {
+        else if (data.message.startsWith("!mean") || data.message.startsWith("!avg") || data.message.startsWith("!average")) {
             processByLength(data.message, average);
         }
         else if (data.message.startsWith("!mode")) {
@@ -127,8 +128,20 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
             processByLength(data.message, max);
         }
+        else if (data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
+            processJoking(data.message, jokingProbability125);
+        }
+        else if (data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
+            processJoking(data.message, jokingProbability4);
+        }
         else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
             processByBust(data.message, probability);
+        }
+        else if (data.message.startsWith("!bust joking125") || data.message.startsWith("!bust joking125")) {
+            processJoking(data.message, jokingBust125);
+        }
+        else if (data.message.startsWith("!bust joking4") || data.message.startsWith("!bust joking4")) {
+            processJoking(data.message, jokingBust4);
         }
         else if (data.message.startsWith("!bust")) {
             processByBust(data.message, bust);
@@ -307,6 +320,136 @@ function processByBust(message, action) {
     engine.chat(response);
 }
 
+function processByBust(message, action) {
+    /* Get the cashouts that come after the command. */
+    var cashouts = message.split(" ").filter(function (ii) { return ii; });
+    cashouts = cashouts.slice(1);
+
+    /* Check input. */
+    if (cashouts.length == 0) {
+        /* Default to 2x. */
+        cashouts.push("2");
+    }
+    else if (cashouts.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Clear duplicates. */
+    cashouts = unique(cashouts);
+
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+
+        var cashout;
+        if (text.startsWith("<") || text.startsWith(">")) {
+            cashout = parseFloat(text.substring(1));
+        }
+        else {
+            cashout = parseFloat(text);
+        }
+
+        if (isNaN(cashout)) { /* Check for NaN. */
+            engine.chat("Wrong format: " + text);
+            return;
+        }
+        else if (cashout < 1) {
+            engine.chat("Please target a cashout of at least 1: " + text);
+            return;
+        }
+        else if (text.indexOf("x") > 0) {
+            var parts = text.split("x");
+            if (parts.length < 2) {
+                engine.chat("Wrong format: " + text);
+                return;
+            }
+            else {
+                var streak = parseInt(parts[1]);
+                if (isNaN(streak)) {
+                    engine.chat("Wrong format: " + text);
+                    return;
+                }
+                else if (streak < 1 || streak > 20) {
+                    engine.chat("Please target a streak between 1 and 20: " + text);
+                    return;
+                }
+            }
+        }
+    }
+
+    /* Process request. */
+    var results = [];
+    var response = "";
+
+    for (var ii = 0; ii < cashouts.length; ii++) {
+        var text = cashouts[ii];
+        response += text + " ";
+        results.push(action(text)); /* Let the action interpret the x#. */
+    }
+
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
+
+
+function processJoking(message, action) {
+    /* Get the losses that come after the command. */
+    var losses = message.split(" ").filter(function (ii) { return ii; });
+    losses = losses.slice(2);
+
+    /* Check input. */
+    if (losses.length == 0) {
+        /* Default to 5. */
+        losses.push("5");
+    }
+    else if (losses.length > 3) {
+        engine.chat("Please limit to three arguments in one request.");
+        return;
+    }
+    
+    /* Clear duplicates. */
+    losses = unique(losses);
+
+    /* Check for invalid arguments. */
+    for (var ii = 0; ii < losses.length; ii++) {
+        var text = losses[ii];
+        var loss = parseFloat(text);
+        
+        if (isNaN(text)) { /* Check for NaN. */
+            engine.chat("Wrong format: " + text);
+            return;
+        }
+        else if (loss != Math.floor(loss) || loss < 3 || loss > 9) {
+            engine.chat("Please target a loss streak between 3 and 9: " + text);
+            return;
+        }
+    }
+
+    /* Process request. */
+    var results = [];
+    var response = "";
+
+    for (var ii = 0; ii < losses.length; ii++) {
+        var text = losses[ii];
+        response += text + " ";
+        results.push(action(text));
+    }
+
+    /* Print result. */
+    var response = response.trim() + ":";
+    for (var ii = 0; ii < results.length; ii++) {
+        response += " " + results[ii] + "; ";
+    }
+    response = response.substring(0, response.length - 2); /* Trim final semicolon. */
+    engine.chat(response);
+}
+
 /*==================================
  Calculations for requests.
 ===================================*/
@@ -341,7 +484,7 @@ function getNyanMessage() {
         if (minutes >= 5) {
             var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
             if (hours < 1) {
-                message += " maybe " + minutes + ".";
+                message += " maybe " + minutes + " minutes.";
             }
             else if (hours < 2) {
                 message += " maybe an hour";
@@ -494,22 +637,20 @@ function probability(cashout) {
         }
         cashout = cashout.substring(1);
     }
-
-    var value = parseFloat(cashout);
-    var prob = 99 / (1.01 * (parseFloat(cashout) - 0.01)); /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    var p = prob(parseFloat(cashout));
 
     /* Check for inversion. */
     if (invert) {
-        prob = 100 - prob;
+        p = 100 - p;
     }
 
     /* Check for streak. */
     if (cashout.indexOf("x") > 0) {
         var streak = parseInt(cashout.split("x")[1]);
-        prob = Math.pow(prob / 100.0, streak) * 100.0;
+        p = Math.pow(p / 100.0, streak) * 100.0;
     }
 
-    return '~' + round(prob, 3) + '%';
+    return "~" + round(p, 3) + "%";
 }
 
 function bust(cashout) {
@@ -606,6 +747,63 @@ function streak(cashout) {
     else {
         return "never seen";
     }
+}
+
+function jokingProbability125(losses) {
+    var p108 = (100 - prob(1.08)) / 100.0;
+    var p125 = (100 - prob(1.25)) / 100.0;
+    var p = p108 * Math.pow(p125, losses - 1);
+    return 'bust~' + round(p * 100.0, 5) + '%';
+}
+
+var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
+function jokingBust125(losses) {
+    var streak = _streak125.slice(0, losses);
+    streak.reverse(); /* The order in which we'll come across the games. */
+    
+    var found = [];
+    for (var ii = 0; ii < _games.length; ii++) {
+        var game = _games[ii];
+        if (game.bust < streak[found.length]) {
+            found.push(game);
+            if (found.length >= streak.length) {
+                break;
+            }
+        }
+        else {
+            /* Clear what we're tracking. */
+            found = [];
+        }
+    }
+
+    /* Report back. */
+    if (found.length >= streak.length) {
+        /* Start from the first game. */
+        found.reverse();
+
+        /* List all the games. */
+        var result = "";
+        for (var ii = 0; ii < found.length; ii++) {
+            if (result) {
+                result += ", ";
+            }
+            result += found[ii].bust + "x";
+        }
+        
+        result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
+        return result;
+    }
+    else {
+        return "never seen";
+    }
+}
+
+function jokingProbability4(losses) {
+    
+}
+
+function jokingBust4(losses) {
+    
 }
 
 /*==================================
@@ -836,7 +1034,7 @@ function concatArrays(first, second) {
 }
 
 function round(value, decimals) {
-    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+    return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
 }
 
 function unique(args) {
@@ -850,6 +1048,11 @@ function unique(args) {
 function utcDate() {
     var utc = new Date();
     return new Date().setMinutes(utc.getMinutes() + utc.getTimezoneOffset());
+}
+
+function prob(cashout) {
+    /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    return 99 / (1.01 * (parseFloat(cashout) - 0.01));
 }
 
 /*==================================
