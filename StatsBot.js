@@ -34,12 +34,17 @@
     - !prob joking125[ G[ H[ I]]]
       !probability joking125[ G[ H[ I]]]:   Returns the probability that Joking313's 1.25x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
+    - !prob joking4[ G[ H[ I]]]
+      !probability joking4[ G[ H[ I]]]:     Returns the probability that Joking313's 4x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
                                             For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
     - !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
+    - !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
     - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
