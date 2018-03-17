@@ -201,7 +201,7 @@ if (checkVariables()) {
         getBet() {
             return {
                 totalBet: this.bet * this.multiplier,
-                maxGamesAtBet: Math.floor(1000.0 / this.multiplier)
+                maxGamesAtBet: Math.floor(this.value / this.multiplier)
             };
         }
     };
