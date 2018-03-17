@@ -396,7 +396,7 @@ function processJoking(message, action) {
 
 function getNyan() {
     if (!_nyan) {
-        var cached = localStorage.getItem("nyan", _nyan);
+        var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
             var current = _games[ii];
             if (current.bust >= 1000.00) {
@@ -809,7 +809,7 @@ engine.on("game_crash", function (data) {
                 id: _game.id,
                 time: utcDate()
             };
-            localStorage.setItem("nyan", _nyan);
+            localStorage.setItem("nyan", JSON.stringify(_nyan));
         }
         else if (_game.bust >= 900.00) {
             engine.chat("Ooh, so close!");
