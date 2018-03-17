@@ -1029,7 +1029,7 @@ function say(message) {
        "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
        because I don't want "!streak <1000000" to print out every game that's ever been played. */
     if (message.length > 499) {
-        message = message.slice(0, 495) + ' ...';
+        message = message.slice(0, 496) + '...';
         engine.chat(message);
         engine.chat("Response too long.");
     }
