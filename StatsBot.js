@@ -58,6 +58,8 @@
     - !donate
       !tip:                                 Provides information for monetary thanks for running the script.
                                             If you are running your own copy of the script, you may want to replace the nano address with your own.
+    - !script
+      !scripts                              Provides links to commonly-used scripts.
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
@@ -79,27 +81,34 @@ engine.on("msg", function (data) {
         if (data.username == _scriptUsername) {
             if (data.message == "!stop") {
                 cacheResults();
-                engine.chat("Script shutting down.");
+                say("Script shutting down.");
                 engine.stop();
+                return;
             }
             else if (data.message == "!clearhistory") {
                 clearCachedResults();
-                engine.chat("Script shutting down.");
+                say("Script shutting down.");
                 engine.stop();
+                return;
             }
         }
         if (data.message == "!help") {
-            engine.chat("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
-            engine.chat("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
+            say("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
+            say("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
         }
         else if (data.message == "!helpline") {
-            engine.chat("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+            say("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
         }
         else if (data.message == "!donate") {
-            engine.chat("Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
+            say("Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
         }
         else if (data.message == "!tip") {
-            engine.chat("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
+            say("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
+        }
+        else if (data.message == "!script" || data.message == "!scripts") {
+            say("Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
+            say("If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
+            say("Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
         }
         else if (data.message.indexOf(_scriptUsername.toLowerCase()) >= 0) {
             snark();
@@ -122,11 +131,11 @@ engine.on("msg", function (data) {
         }
         else if (data.message == "!n" || data.message == "!nyan") {
             var nyan = getNyanMessage();
-            engine.chat(nyan);
+            say(nyan);
         }
         else if (data.message == "!getnyan") {
             var nyan = getNyan();
-            engine.chat("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
+            say("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
@@ -155,6 +164,9 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!streak")) {
             processByBust(data.message, streak);
         }
+        else if (data.message.startsWith("!")) {
+            say("I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
+        }
     }
 });
 
@@ -173,7 +185,7 @@ function processByLength(message, action) {
         lengths.push("100");
     }
     else if (lengths.length > 3) {
-        engine.chat("Please limit to three arguments in one request.");
+        say("Please limit to three arguments in one request.");
         return;
     }
     
@@ -186,32 +198,31 @@ function processByLength(message, action) {
         var length = parseInt(text);
         if (isNaN(length)) { /* Check for NaN. */
             if (text.indexOf("all") >= 0) {
-                length = _games.length.toString();
-                lengths[ii] = lengths[ii].replace("all", length);
+                lengths[ii] = length = _games.length.toString();
             }
             else {
-                engine.chat("Wrong format: " + text);
+                say("Wrong format: " + text);
                 return;
             }
         }
         else if (length < 1) {
-            engine.chat("Please target at least 1 game: " + text);
+            say("Please target at least 1 game: " + text);
             return;
         }
         else if (text.indexOf("x") > 0) {
             var parts = text.split("x");
             if (parts.length < 2) {
-                engine.chat("Wrong format: " + text);
+                say("Wrong format: " + text);
                 return;
             }
             else {
                 var sets = parseInt(parts[1]);
                 if (isNaN(sets)) {
-                    engine.chat("Wrong format: " + text);
+                    say("Wrong format: " + text);
                     return;
                 }
                 else if (sets < 1 || sets > 5) {
-                    engine.chat("Please target between 1 and 5 sets: " + text);
+                    say("Please target between 1 and 5 sets: " + text);
                     return;
                 }
             }
@@ -247,7 +258,7 @@ function processByLength(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    engine.chat(response);
+    say(response);
 }
 
 function processByBust(message, action) {
@@ -261,7 +272,7 @@ function processByBust(message, action) {
         cashouts.push("2");
     }
     else if (cashouts.length > 3) {
-        engine.chat("Please limit to three arguments in one request.");
+        say("Please limit to three arguments in one request.");
         return;
     }
     
@@ -280,34 +291,34 @@ function processByBust(message, action) {
             cashout = parseFloat(text);
         }
 
+        /* Support nyan. */
+        if (text.indexOf("nyan") >= 0) {
+            cashout = 1000;
+            cashouts[ii] = cashouts[ii].replace("nyan", cashout);
+        }
+        
         if (isNaN(cashout)) { /* Check for NaN. */
-            if (text.indexOf("nyan") >= 0) {
-                cashout = 1000;
-                cashouts[ii] = cashouts[ii].replace("nyan", cashout);
-            }
-            else {
-                engine.chat("Wrong format: " + text);
-                return;
-            }
+            say("Wrong format: " + text);
+            return;
         }
         else if (cashout < 1) {
-            engine.chat("Please target a cashout of at least 1: " + text);
+            say("Please target a cashout of at least 1: " + text);
             return;
         }
         else if (text.indexOf("x") > 0) {
             var parts = text.split("x");
             if (parts.length < 2) {
-                engine.chat("Wrong format: " + text);
+                say("Wrong format: " + text);
                 return;
             }
             else {
                 var streak = parseInt(parts[1]);
                 if (isNaN(streak)) {
-                    engine.chat("Wrong format: " + text);
+                    say("Wrong format: " + text);
                     return;
                 }
                 else if (streak < 1 || streak > 20) {
-                    engine.chat("Please target a streak between 1 and 20: " + text);
+                    say("Please target a streak between 1 and 20: " + text);
                     return;
                 }
             }
@@ -330,7 +341,7 @@ function processByBust(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    engine.chat(response);
+    say(response);
 }
 
 function processJoking(message, action) {
@@ -344,7 +355,7 @@ function processJoking(message, action) {
         losses.push("5");
     }
     else if (losses.length > 3) {
-        engine.chat("Please limit to three arguments in one request.");
+        say("Please limit to three arguments in one request.");
         return;
     }
     
@@ -357,11 +368,11 @@ function processJoking(message, action) {
         var loss = parseFloat(text);
         
         if (isNaN(text)) { /* Check for NaN. */
-            engine.chat("Wrong format: " + text);
+            say("Wrong format: " + text);
             return;
         }
         else if (loss != Math.floor(loss) || loss < 3 || loss > 9) {
-            engine.chat("Please target a loss streak between 3 and 9: " + text);
+            say("Please target a loss streak between 3 and 9: " + text);
             return;
         }
     }
@@ -382,7 +393,7 @@ function processJoking(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    engine.chat(response);
+    say(response);
 }
 
 /*==================================
@@ -391,7 +402,7 @@ function processJoking(message, action) {
 
 function getNyan() {
     if (!_nyan) {
-        var cached = localStorage.getItem("nyan", _nyan);
+        var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
             var current = _games[ii];
             if (current.bust >= 1000.00) {
@@ -787,7 +798,7 @@ engine.on("game_crash", function (data) {
             if (_games[0].id == _game.id) {
                 _caughtUp = true;
                 cacheResults();
-                engine.chat("Script ready. Ask me anything.");
+                say("Script ready. Ask me anything.");
             }
         }
         else {
@@ -795,7 +806,7 @@ engine.on("game_crash", function (data) {
             if (!_caughtUp) {
                 _caughtUp = true;
                 cacheResults();
-                engine.chat("Script ready. Ask me anything.");
+                say("Script ready. Ask me anything.");
             }
         }
 
@@ -804,13 +815,13 @@ engine.on("game_crash", function (data) {
                 id: _game.id,
                 time: utcDate()
             };
-            localStorage.setItem("nyan", _nyan);
+            localStorage.setItem("nyan", JSON.stringify(_nyan));
         }
         else if (_game.bust >= 900.00) {
-            engine.chat("Ooh, so close!");
+            say("Ooh, so close!");
         }
         else if (_game.bust == 0.00) {
-            engine.chat("Ouch..");
+            say("Ouch..");
         }
     }
 });
@@ -850,7 +861,7 @@ _snarks.push("F*ck! Even in the future nothing works.");
 _snarks.push("Go home. Feed your dog. Meet your kids.");
 function snark() {
     var index = Math.floor(Math.random() * _snarks.length);
-    engine.chat(_snarks[index]);
+    say(_snarks[index]);
 }
 
 var _shibaSnarks = [];
@@ -861,7 +872,7 @@ _shibaSnarks.push("shiba ded");
 _shibaSnarks.push("A moment of silence for our dear, departed friend, Shiba.");
 function shibaSnark() {
     var index = Math.floor(Math.random() * _shibaSnarks.length);
-    engine.chat(_shibaSnarks[index]);
+    say(_shibaSnarks[index]);
 }
 
 /*==================================
@@ -1002,6 +1013,20 @@ function utcDate() {
 function prob(cashout) {
     /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
     return 99 / (1.01 * (parseFloat(cashout) - 0.01));
+}
+
+function say(message) {
+    /* There's a limit of 499 characters per chat message.  This shouldn't be a problem too often, but, if someone does something like "!streak 1" or
+       "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
+       because I don't want "!streak <1000000" to print out every game that's ever been played. */
+    if (message.length > 499) {
+        message = message.slice(0, 495) + ' ...';
+        engine.chat(message);
+        engine.chat("Response too long.");
+    }
+    else {
+        engine.chat(message);
+    }
 }
 
 /*==================================
