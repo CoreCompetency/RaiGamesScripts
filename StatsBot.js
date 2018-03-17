@@ -58,6 +58,8 @@
     - !donate
       !tip:                                 Provides information for monetary thanks for running the script.
                                             If you are running your own copy of the script, you may want to replace the nano address with your own.
+    - !script
+      !scripts                              Provides links to commonly-used scripts.
     
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
@@ -102,6 +104,11 @@ engine.on("msg", function (data) {
         }
         else if (data.message == "!tip") {
             engine.chat("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
+        }
+        else if (data.message == "!script" || data.message == "!scripts") {
+            engine.chat("Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
+            engine.chat("If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
+            engine.chat("Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
         }
         else if (data.message.indexOf(_scriptUsername.toLowerCase()) >= 0) {
             snark();
