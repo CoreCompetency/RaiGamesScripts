@@ -198,8 +198,7 @@ function processByLength(message, action) {
         var length = parseInt(text);
         if (isNaN(length)) { /* Check for NaN. */
             if (text.indexOf("all") >= 0) {
-                length = _games.length.toString();
-                lengths[ii] = lengths[ii].replace("all", length);
+                lengths[ii] = length = _games.length.toString();
             }
             else {
                 say("Wrong format: " + text);
@@ -292,15 +291,15 @@ function processByBust(message, action) {
             cashout = parseFloat(text);
         }
 
+        /* Support nyan. */
+        if (text.indexOf("nyan") >= 0) {
+            cashout = 1000;
+            cashouts[ii] = cashouts[ii].replace("nyan", cashout);
+        }
+        
         if (isNaN(cashout)) { /* Check for NaN. */
-            if (text.indexOf("nyan") >= 0) {
-                cashout = 1000;
-                cashouts[ii] = cashouts[ii].replace("nyan", cashout);
-            }
-            else {
-                say("Wrong format: " + text);
-                return;
-            }
+            say("Wrong format: " + text);
+            return;
         }
         else if (cashout < 1) {
             say("Please target a cashout of at least 1: " + text);
