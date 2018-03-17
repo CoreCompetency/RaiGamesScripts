@@ -301,7 +301,7 @@ function processByBust(message, action) {
             say("Wrong format: " + text);
             return;
         }
-        else if (cashout < 1) {
+        else if (cashout < 1 && (cashout != 0 || !text.startsWith("0"))) { /* 0x is a special case. */
             say("Please target a cashout of at least 1: " + text);
             return;
         }
@@ -332,6 +332,10 @@ function processByBust(message, action) {
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
         response += text + " ";
+        
+        if (parseFloat(text) == 0) { /* 0x is a special case. */
+            text = text.replace("0", "<1");
+        }
         results.push(action(text)); /* Let the action interpret the x#. */
     }
 
@@ -662,6 +666,9 @@ function streak(cashout) {
             if (find && found.length >= find) {
                 break;
             }
+            if (found.length > 2000) {
+                return ".. found streak above 2000 ..";
+            }
         }
         else {
             /* Clear what we're tracking. */
@@ -841,7 +848,7 @@ _snarks.push("You've got to ask yourself one question: do I feel lucky? Well do 
 _snarks.push("There's no shame in my robot game.");
 _snarks.push("Hey, I'm workin' here!");
 _snarks.push("everbody to the limit, everybody to the limit, everbody come on fhqwhgads");
-_snarks.push("♫ Don't stop believin' ♫ Hold on to that feelin' ♫");
+_snarks.push("? Don't stop believin' ? Hold on to that feelin' ?");
 _snarks.push("bitconneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeccccct");
 _snarks.push("Gotta catch 'em all!");
 _snarks.push("Shiny");
@@ -859,6 +866,8 @@ _snarks.push("I don't know half of you half as well as I should like; and I like
 _snarks.push("Life is a co-op game.");
 _snarks.push("F*ck! Even in the future nothing works.");
 _snarks.push("Go home. Feed your dog. Meet your kids.");
+_snarks.push("beep boop");
+_snarks.push("If a robot is programmed to have feelings, are those feelings any less real?");
 function snark() {
     var index = Math.floor(Math.random() * _snarks.length);
     say(_snarks[index]);
