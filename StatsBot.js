@@ -301,8 +301,8 @@ function processByBust(message, action) {
             say("Wrong format: " + text);
             return;
         }
-        else if (cashout < 1 && (cashout != 0 || (cashout == 0 && text.startsWith("<")))) {
-            say("Please target a cashout of >0 or 1+: " + text);
+        else if (cashout < 1 && (cashout != 0 || !text.startsWith("0"))) { /* 0x is a special case. */
+            say("Please target a cashout of at least 1: " + text);
             return;
         }
         else if (text.indexOf("x") > 0) {
@@ -332,6 +332,10 @@ function processByBust(message, action) {
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
         response += text + " ";
+        
+        if (parseFloat(text) == 0) { /* 0x is a special case. */
+            text = text.replace("0", "<1");
+        }
         results.push(action(text)); /* Let the action interpret the x#. */
     }
 
