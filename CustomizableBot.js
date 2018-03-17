@@ -465,7 +465,7 @@ if (checkVariables()) {
         }
         else if (result == "WON") {
             logNyan(result, bust);
-            console.log("Caught nyan!  It only took " + nyan.totalGames + " game" + (nyan.totalGames > 1 ? "s." : "."));
+            console.log("Caught nyan! It only took " + nyan.totalGames + " game" + (nyan.totalGames > 1 ? "s." : "."));
             
             if (stopAfterWin) {
                 stop("!stopAfterWin applied");
