@@ -26,32 +26,48 @@
                                             A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
                                             For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
-    - !prob[ D[ E[ F]]]
+    - !prb[ D[ E[ F]]]
+      !prob[ D[ E[ F]]]
       !probability[ D[ E[ F]]]:             Returns the probability(ies) of the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
                                             For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
-    - !prob joking125[ G[ H[ I]]]
+                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
+    - !prb joking125[ G[ H[ I]]]
+      !prob joking125[ G[ H[ I]]]
       !probability joking125[ G[ H[ I]]]:   Returns the probability that Joking313's 1.25x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
-    - !prob joking4[ G[ H[ I]]]
+    - !prb joking4[ G[ H[ I]]]
+      !prob joking4[ G[ H[ I]]]
       !probability joking4[ G[ H[ I]]]:     Returns the probability that Joking313's 4x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
-    - !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
+    - !bst[ D[ E[ F]]]
+      !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
                                             For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
-    - !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
+    - !bst joking125[ G[ H[ I]]]
+      !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
-    - !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+    - !bst joking4[ G[ H[ I]]]
+      !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
     - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
+                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !n
       !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
+    - !n#
+      !nyan#
+      !n #
+      !nyan #
+      !nx#                               
+      !nyanx#:                              Returns the last # of nyans, which are a bust >= 1000.00.
+                                            This is equivalent to calling "!bust nyanx#";
     - !getnyan:                             Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
     - !help:                                Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
     - !helpline:                            Provides information about the National Problem Gambling Helpline.
@@ -75,6 +91,11 @@
  Request management.
 ===================================*/
 
+var _ignore = [
+    "!kill", /* Joking313 scripts. */
+    "!cashout", "!stop", "!stopafterwin", "!chase.start", "!chase.stop", /* CustomizableBot. */
+    "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off" /* SoundAlerts. */
+];
 engine.on("msg", function (data) {
     if (data.message) {
         data.message = data.message.toLowerCase(); /* Easier for downstream processing to do this in one place. */
@@ -110,19 +131,19 @@ engine.on("msg", function (data) {
             say("If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
             say("Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
         }
-        else if (data.message.indexOf(_scriptUsername.toLowerCase()) >= 0) {
+        else if (data.message.indexOf(_scriptUsername.toLowerCase()) > -1) {
             snark();
         }
-        else if (data.username != _scriptUsername && data.message.indexOf("shiba") >= 0) {
+        else if (data.username != _scriptUsername && data.message.indexOf("shiba") > -1) {
             shibaSnark();
         }
-        else if (data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
+        else if (data.message.startsWith("!prb joking125") || data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
             processJoking(data.message, jokingProbability125);
         }
-        else if (data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
+        else if (data.message.startsWith("!prb joking4") || data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
             processJoking(data.message, jokingProbability4);
         }
-        else if (data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
+        else if (data.message.startsWith("!prb") || data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
             processByBust(data.message, probability);
         }
         else if (!_caughtUp) {
@@ -136,6 +157,9 @@ engine.on("msg", function (data) {
         else if (data.message == "!getnyan") {
             var nyan = getNyan();
             say("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
+        }
+        else if (data.message.startsWith("!n") || data.message.startsWith("!nyan")) {
+            nyanToBust(data.message);
         }
         else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
             processByLength(data.message, median);
@@ -152,19 +176,19 @@ engine.on("msg", function (data) {
         else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
             processByLength(data.message, max);
         }
-        else if (data.message.startsWith("!bust joking125") || data.message.startsWith("!bust joking125")) {
+        else if (data.message.startsWith("!bst joking125") || data.message.startsWith("!bust joking125")) {
             processJoking(data.message, jokingBust125);
         }
-        else if (data.message.startsWith("!bust joking4") || data.message.startsWith("!bust joking4")) {
+        else if (data.message.startsWith("!bst joking4") || data.message.startsWith("!bust joking4")) {
             processJoking(data.message, jokingBust4);
         }
-        else if (data.message.startsWith("!bust")) {
+        else if (data.message.startsWith("!bst") || data.message.startsWith("!bust")) {
             processByBust(data.message, bust);
         }
         else if (data.message.startsWith("!streak")) {
             processByBust(data.message, streak);
         }
-        else if (data.message.startsWith("!")) {
+        else if (data.message.startsWith("!") && _ignore.indexOf(data.message) == -1) {
             say("I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
         }
     }
@@ -292,9 +316,9 @@ function processByBust(message, action) {
         }
 
         /* Support nyan. */
-        if (text.indexOf("nyan") >= 0) {
+        if (text.indexOf("nyan") >= 0 || text.indexOf("n") >= 0) {
             cashout = 1000;
-            cashouts[ii] = cashouts[ii].replace("nyan", cashout);
+            cashouts[ii] = cashouts[ii].replace("nyan", cashout).replace("n", cashout);
         }
         
         if (isNaN(cashout)) { /* Check for NaN. */
@@ -336,7 +360,15 @@ function processByBust(message, action) {
         if (parseFloat(text) == 0) { /* 0x is a special case. */
             text = text.replace("0", "<1");
         }
-        results.push(action(text)); /* Let the action interpret the x#. */
+        
+        var below = false;
+        if (text.startsWith("<") || text.startsWith(">")) {
+            if (text.startsWith("<")) {
+                below = true;
+            }
+            text = text.substring(1);
+        }
+        results.push(action(text, below)); /* Let the action interpret the x#. */
     }
 
     /* Print result. */
@@ -468,6 +500,20 @@ function getNyanMessage() {
     return message;
 }
 
+function nyanToBust(message) {
+    var index = message.indexOf("nyan") > -1 ? 5 : 2;
+    var arg = message.substring(index).trim();
+    if (arg.indexOf(" ") > -1) {
+        say("Wrong format: " + arg);
+    }
+    else {
+        if (arg.startsWith("x")) {
+            arg = arg.substring(1);
+        }
+        processByBust("!bust nyanx" + arg, bust);
+    }
+}
+
 function median(start, length) {
     try {
         var local = _games.slice(start, start + length);
@@ -579,18 +625,11 @@ function max(start, length) {
     }
 }
 
-function probability(cashout) {
-    var invert = false;
-    if (cashout.startsWith("<") || cashout.startsWith(">")) {
-        if (cashout.startsWith("<")) {
-            invert = true;
-        }
-        cashout = cashout.substring(1);
-    }
+function probability(cashout, below) {
     var p = prob(parseFloat(cashout));
 
     /* Check for inversion. */
-    if (invert) {
+    if (below) {
         p = 100 - p;
     }
 
@@ -603,15 +642,7 @@ function probability(cashout) {
     return "~" + round(p, 3) + "%";
 }
 
-function bust(cashout) {
-    var invert = false;
-    if (cashout.startsWith("<") || cashout.startsWith(">")) {
-        if (cashout.startsWith("<")) {
-            invert = true;
-        }
-        cashout = cashout.substring(1);
-    }
-
+function bust(cashout, below) {
     var value = parseFloat(cashout);
     var find = 1;
     if (cashout.indexOf("x") > 0) {
@@ -622,7 +653,7 @@ function bust(cashout) {
     var found = 0;
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if ((invert && game.bust < value) || (!invert && game.bust >= value)) {
+        if ((below && game.bust < value) || (!below && game.bust >= value)) {
             if (result) {
                 result += ", ";
             }
@@ -639,15 +670,7 @@ function bust(cashout) {
     return result;
 }
 
-function streak(cashout) {
-    var invert = false;
-    if (cashout.startsWith("<") || cashout.startsWith(">")) {
-        if (cashout.startsWith("<")) {
-            invert = true;
-        }
-        cashout = cashout.substring(1);
-    }
-
+function streak(cashout, below) {
     var value = parseFloat(cashout);
     var find;
     if (cashout.indexOf("x") > 0) {
@@ -658,7 +681,7 @@ function streak(cashout) {
     var check = [];
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if ((invert && game.bust < value) || (!invert && game.bust >= value)) {
+        if ((below && game.bust < value) || (!below && game.bust >= value)) {
             check.push(game);
             if (check.length > found.length) {
                 found = check.slice(0); /* Copy the values, not the reference. */
@@ -1009,8 +1032,7 @@ function round(value, decimals) {
 function unique(args) {
     var seen = {};
     return args.filter(function(item) {
-        var key = item.toLowerCase();
-        return seen.hasOwnProperty(key) ? false : (seen[key] = true);
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     })
 }
 
