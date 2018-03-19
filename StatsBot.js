@@ -98,97 +98,97 @@ var _ignore = [
 ];
 engine.on("msg", function (data) {
     if (data.message) {
-        data.message = data.message.toLowerCase(); /* Easier for downstream processing to do this in one place. */
+        var message = data.message.toLowerCase(); /* Easier for downstream processing to do this in one place. */
         if (data.username == _scriptUsername) {
-            if (data.message == "!stop") {
+            if (message == "!stop") {
                 cacheResults();
                 say("Script shutting down.");
                 engine.stop();
                 return;
             }
-            else if (data.message == "!clearhistory") {
+            else if (message == "!clearhistory") {
                 clearCachedResults();
                 say("Script shutting down.");
                 engine.stop();
                 return;
             }
         }
-        if (data.message == "!help") {
+        if (message == "!help") {
             say("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
             say("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
         }
-        else if (data.message == "!helpline") {
+        else if (message == "!helpline") {
             say("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
         }
-        else if (data.message == "!donate") {
+        else if (message == "!donate") {
             say("Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
         }
-        else if (data.message == "!tip") {
+        else if (message == "!tip") {
             say("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
         }
-        else if (data.message == "!script" || data.message == "!scripts") {
+        else if (message == "!script" || message == "!scripts") {
             say("Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
             say("If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
             say("Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
         }
-        else if (data.message.indexOf(_scriptUsername.toLowerCase()) > -1) {
+        else if (message.indexOf(_scriptUsername.toLowerCase()) > -1) {
             snark();
         }
-        else if (data.username != _scriptUsername && data.message.indexOf("shiba") > -1) {
+        else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
             shibaSnark();
         }
-        else if (data.message.startsWith("!prb joking125") || data.message.startsWith("!prob joking125") || data.message.startsWith("!probability joking125")) {
-            processJoking(data.message, jokingProbability125);
+        else if (message.startsWith("!prb joking125") || message.startsWith("!prob joking125") || message.startsWith("!probability joking125")) {
+            processJoking(message, jokingProbability125);
         }
-        else if (data.message.startsWith("!prb joking4") || data.message.startsWith("!prob joking4") || data.message.startsWith("!probability joking4")) {
-            processJoking(data.message, jokingProbability4);
+        else if (message.startsWith("!prb joking4") || message.startsWith("!prob joking4") || message.startsWith("!probability joking4")) {
+            processJoking(message, jokingProbability4);
         }
-        else if (data.message.startsWith("!prb") || data.message.startsWith("!prob") || data.message.startsWith("!probability")) {
-            processByBust(data.message, probability);
+        else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
+            processByBust(message, probability);
         }
         else if (!_caughtUp) {
             /* Script isn't ready to respond to the requests below yet. */
             return;
         }
-        else if (data.message == "!n" || data.message == "!nyan") {
+        else if (message == "!n" || message == "!nyan") {
             var nyan = getNyanMessage();
             say(nyan);
         }
-        else if (data.message == "!getnyan") {
+        else if (message == "!getnyan") {
             var nyan = getNyan();
             say("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
         }
-        else if (data.message.startsWith("!n") || data.message.startsWith("!nyan")) {
-            nyanToBust(data.message);
+        else if (message.startsWith("!n") || message.startsWith("!nyan")) {
+            nyanToBust(message);
         }
-        else if (data.message.startsWith("!med") || data.message.startsWith("!median")) {
-            processByLength(data.message, median);
+        else if (message.startsWith("!med") || message.startsWith("!median")) {
+            processByLength(message, median);
         }
-        else if (data.message.startsWith("!mean") || data.message.startsWith("!avg") || data.message.startsWith("!average")) {
-            processByLength(data.message, average);
+        else if (message.startsWith("!mean") || message.startsWith("!avg") || message.startsWith("!average")) {
+            processByLength(message, average);
         }
-        else if (data.message.startsWith("!mode")) {
-            processByLength(data.message, mode);
+        else if (message.startsWith("!mode")) {
+            processByLength(message, mode);
         }
-        else if (data.message.startsWith("!min") || data.message.startsWith("!minimum")) {
-            processByLength(data.message, min);
+        else if (message.startsWith("!min") || message.startsWith("!minimum")) {
+            processByLength(message, min);
         }
-        else if (data.message.startsWith("!max") || data.message.startsWith("!maximum")) {
-            processByLength(data.message, max);
+        else if (message.startsWith("!max") || message.startsWith("!maximum")) {
+            processByLength(message, max);
         }
-        else if (data.message.startsWith("!bst joking125") || data.message.startsWith("!bust joking125")) {
-            processJoking(data.message, jokingBust125);
+        else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
+            processJoking(message, jokingBust125);
         }
-        else if (data.message.startsWith("!bst joking4") || data.message.startsWith("!bust joking4")) {
-            processJoking(data.message, jokingBust4);
+        else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
+            processJoking(message, jokingBust4);
         }
-        else if (data.message.startsWith("!bst") || data.message.startsWith("!bust")) {
-            processByBust(data.message, bust);
+        else if (message.startsWith("!bst") || message.startsWith("!bust")) {
+            processByBust(message, bust);
         }
-        else if (data.message.startsWith("!streak")) {
-            processByBust(data.message, streak);
+        else if (message.startsWith("!streak")) {
+            processByBust(message, streak);
         }
-        else if (data.message.startsWith("!") && _ignore.indexOf(data.message) == -1) {
+        else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
             say("I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
         }
     }
@@ -220,6 +220,11 @@ function processByLength(message, action) {
     for (var ii = 0; ii < lengths.length; ii++) {
         var text = lengths[ii];
         var length = parseInt(text);
+        
+        if (length > _games.length) {
+            lengths[ii] = length = _games.length.toString();
+        }
+        
         if (isNaN(length)) { /* Check for NaN. */
             if (text.indexOf("all") >= 0) {
                 lengths[ii] = length = _games.length.toString();
@@ -437,6 +442,7 @@ function processJoking(message, action) {
 ===================================*/
 
 function getNyan() {
+    console.log(localStorage.getItem("nyan"));
     if (!_nyan) {
         var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
