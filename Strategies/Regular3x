@@ -1,0 +1,61 @@
+/* This strategy will look for a 3.00x cashout and double the bet on every loss.  On a win, it will start over.
+   This strategy will quit if 1) it hits 9 losses in a row, or 2) it earns 2000 times the base bet.
+   For a base bet of 1, this strategy will run until it wins 2000 mXRB total or loses 511 mXRB in one streak of losses.
+
+   These settings are intended to be used with the customizable script found here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js
+   Replace the regular betting strategy section with the one in this file.
+   Be aware that RaiGames.io is a casino and the expected value of any gambling there is negative:  you are expected to lose money.
+   This strategy is not expected to win money.  Run it in test mode before enabling live betting.
+
+   For public scripts, check here:  https://github.com/CoreCompetency/RaiGamesScripts
+   This script is released to the public domain under The Unlicense:  https://choosealicense.com/licenses/unlicense/
+*/
+
+/* Run in test mode. */
+
+var testMode = true;
+
+/* Regular betting strategy. */
+
+var base = {
+    bet: 1,
+    cashout: 3.00
+}
+
+var autoAdjustBaseBet = {
+    enabled: false,
+    percentageOfBalance: 0.001
+}
+
+var max = {
+    losses: 9,
+    wins: null,
+    totalLoss: null,
+    totalWin: base.bet * 2000
+};
+
+var onLose = {
+    reset: false,
+    multiplyBet: 2.0,
+    multiplyCashout: 1.0,
+    increaseBet: 0.0,
+    increaseCashout: 0.00,
+    skip: {
+        games: 0,
+        onlyIfBustAbove: 100000.00,
+        onlyIfBustBelow: 1.00
+    }
+};
+
+var onWin = {
+    reset: true,
+    multiplyBet: 1.0,
+    multiplyCashout: 1.0,
+    increaseBet: 0.0,
+    increaseCashout: 0.0,
+    skip: {
+        games: 0,
+        onlyIfBustAbove: 100000.00,
+        onlyIfBustBelow: 1.00
+    }
+};
