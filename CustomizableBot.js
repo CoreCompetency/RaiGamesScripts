@@ -70,7 +70,7 @@
                                              then 4 for 67 games, for a total of 1900 bets equalling 3267 mXRB.
                                      A win during a chase, even if triggered by a !cashout call or a manual cashout, is treated as a success.
        baseBet:                  The starting amount to bet while chasing a nyan.
-       maxBets:                  The maximum number of times to bet before stopping.  If this is null, the script will chase until it can't bet anymore.
+       maxBets:                  The maximum number of times to bet before stopping.  If this is null, the script will chase until it can't bet anymore or it reaches a bet equal to nyan.
                                      If stopOnSuccess is false, the bet and bet count will reset for every chase.
        stopOnSuccess:            If this is true, the script will stop chasing nyan after a success.
        resumeBettingAfterStop:   If this is true, the script will resume the previous betting strategy after the chase is stopped.
@@ -753,16 +753,20 @@ function checkVariables() {
         console.error("nyanChase.baseBet must be at least 1.");
         errors = true;
     }
-    if (nyanChase.maxBets != null) {
+
+    var maxBets = 0;
+    for (var ii = 1; ii <= nyanValue; ii++) {
+        maxBets += Math.floor(nyanValue / ii);
+    }
+    if (nyanChase.maxBets == null) {
+        nyanChase.maxBets = maxBets; /* Since we were given infinite games, stop at the maximum games we allow for nyanValue. */
+    }
+    else {
         if (nyanChase.maxBets < 1) {
             console.error("nyanChase.maxBets must be at least 1. Use null to disable.");
             errors = true;
         }
         else {
-            var maxBets = 0;
-            for (var ii = 1; ii < nyanValue; ii++) {
-                maxBets += Math.floor(nyanValue / ii);
-            }
             if (nyanChase.maxBets > maxBets) {
                 console.error("nyanChase.maxBets cannot be higher than " + maxBets + ". When chasing a bust of " + nyanValue + "x, nyanChase.maxBets above " + maxBets + " will lose money even on a catch.");
                 errors = true;
