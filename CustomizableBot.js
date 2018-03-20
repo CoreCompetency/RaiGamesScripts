@@ -1,31 +1,31 @@
 /* This is a customizable script that can be run for gambling on RaiGames.io.
    Be aware that RaiGames.io is a casino and the expected value of any gambling there is negative:  you are expected to lose money.
    None of the example strategies in this script are expected to win money.  They are intended solely to demonstrate the functionality of this script.
-   
+
    The following commands can be used in chat as long as you are logged in as the user running the script:
    - !cashout:       This will immediately cash out.
    - !stop:          This will immediately stop the script.
    - !stopafterwin:  This will stop the script after the next win.
-   - !chase.start:   This will pause the previous betting strategy and start chasing a nyan.  
+   - !chase.start:   This will pause the previous betting strategy and start chasing a nyan.
    - !chase.stop:    This will stop the nyan chase and resume the previous betting strategy where it left off.
-   
+
    The variables in this section should be modified to meet your gambling needs.  They are described below:
    - testMode:                   If this is enabled (true), the script will only output to console and will not bet.
                                      Use this to test your strategy before enabling live betting.
                                      The test will not take into account bonuses, so results will be a bit conservative.
-   - base:                       
+   - base:
        bet:                      The default bet.
        cashout:                  The default cashout.
-   - autoAdjustBaseBet:          
+   - autoAdjustBaseBet:
        enabled:                  If this is true, the default bet will be updated dynamically to match a percentage of your balance every time your bet is reset.
        percentageOfBalance:      The percentage of your balance to use as your default bet if dynamically betting.
                                      This should be between 0.0 and 1.0.  The minimum bet will always be 1.
-   - max:                        
+   - max:
        losses:                   The maximum number of losses in a row before stopping the script.  If this is null, the script will run until it can't bet anymore.
        wins:                     The maximum number of wins in a row before stopping the script.  If this is null, the script will run until it can't bet anymore.
        totalLoss:                Net mXRB value that can be lost before the script stops.  If this is null, the script will run until it can't bet anymore.
        totalWin:                 Net mXRB value that can be won before the script stops.  If this is null, the script will run until it can't bet anymore.
-   - onLose:                     
+   - onLose:
        reset:                    If this is true, the bet and cashout will reset to the default bet and cashout after a loss.
        multiplyBet:              On a loss, the current bet will be multiplied by this value.
        multiplyCashout:          On a loss, the current cashout will be multiplied by this value.
@@ -33,13 +33,13 @@
                                      This value can be positive or negative.  The minimum bet will always be 1.
        increaseCashout:          On a loss, the current cashout will be increased by this static amount.
                                      This value can be positive or negative.  The minimum bet will always be 1.
-       skip:                     
+       skip:
          games:                  This number of games will be skipped after a loss.  Set this to 0 to never skip games on a loss.
          onlyIfBustAbove:        Games will only be skipped if the loss that triggers the skip is above this value.  If this is null, the script will always skip the specified number of games.
                                      This setting can be used in conjunction with onlyIfBustBelow; games will be skipped if either condition is met.
          onlyIfBustBelow:        Games will only be skipped if the loss that triggers the skip is below this value.  If this is null, the script will always skip the specified number of games.
                                      This setting can be used in conjunction with onlyIfBustAbove; games will be skipped if either condition is met.
-   - onWin:                      
+   - onWin:
        reset:                    If this is true, the bet and cashout will reset to the default bet and cashout after a win.
        multiplyBet:              On a win, the current bet will be multiplied by this value.
        multiplyCashout:          On a win, the current cashout will be multiplied by this value.
@@ -47,7 +47,7 @@
                                      This value can be positive or negative.  The minimum bet will always be 1.
        increaseCashout:          On a win, the current cashout will be increased by this static amount.
                                      This value can be positive or negative.  The minimum bet will always be 1.
-       skip:                     
+       skip:
          games:                  This number of games will be skipped after a win.  Set this to 0 to never skip games on a win.
          onlyIfBustAbove:        Games will only be skipped if the win that triggers the skip is above this value. If this is null, the script will always skip the specified number of games.
                                      This setting can be used in conjunction with onlyIfBustBelow; games will be skipped if either condition is met.
@@ -60,7 +60,7 @@
                                      Use a null entry to identify a skipped game.
        strategy:                 Each entry in this array represents one bet in the custom strategy and should have a bet value and a cashout value.
                                      Null entries represent skipped games.  The first entry can't be null.
-   - nyanChase:                  
+   - nyanChase:
        enabled:                  If this is true, the script will ignore the regular and custom betting rules above and only focus on chasing a nyan.
                                      During a chase, the script will bet your baseBet 1000 times.
                                      If no nyan is hit, the script will increase your bet and decrease the number of bets before doing so again.
@@ -75,7 +75,7 @@
        stopOnSuccess:            If this is true, the script will stop chasing nyan after a success.
        resumeBettingAfterStop:   If this is true, the script will resume the previous betting strategy after the chase is stopped.
                                      If the chase is started using !chase.start, the previous betting strategy will resume on completion regardless of this value.
-   
+
    This custom script was created by CoreCompetency.  Custom scripts can be ordered here:  http://www.workfornano.com/jobs/programming-tech/raigames-script/
    For public scripts, check here:  https://github.com/CoreCompetency/RaiGamesScripts
    A script for sound alerts can be found at the above link and pasted into this script to enable sound alerts on wins, losses, and chat mentions.
@@ -158,6 +158,7 @@ var nyanChase = {
 =====================================================================================================================*/
 
 nyanChase.baseBet = Math.round(nyanChase.baseBet); /* Don't want this rounding differently as we increase it. */
+nyanValue = 1000; /* Look for a bust of at least 1000x during a chase. */
 
 if (checkVariables()) {
     var testFramework = {
@@ -187,16 +188,16 @@ if (checkVariables()) {
         strategy: null
     };
     reset();
-    
+
     var customPosition = null;
     resetCustom();
-    
+
     var nyan = {
         bet: null,
         multiplier: null,
         games: null,
         totalGames: null,
-        value: 1000,
+        value: nyanValue,
         forceResumeBetting: false,
         getBet() {
             return {
@@ -206,14 +207,14 @@ if (checkVariables()) {
         }
     };
     resetNyan();
-    
+
     var stopAfterWin = false;
     var strategies = {
         regular: "REGULAR",
         custom: "CUSTOM",
         nyan: "NYAN"
     };
-    
+
     engine.on("game_starting", function(info) {
         if (nyanChase.enabled) {
             tracking.strategy = strategies.nyan;
@@ -228,7 +229,7 @@ if (checkVariables()) {
             start(info);
         }
     });
-    
+
     engine.on("game_crash", function(data) {
         /* Bust logic should always match bet logic. */
         if (tracking.strategy == strategies.nyan) {
@@ -241,7 +242,7 @@ if (checkVariables()) {
             bust(data);
         }
     });
-    
+
     function start(info) {
         if (tracking.skipping > 0) {
             if (tracking.skipped >= tracking.skipping) {
@@ -255,12 +256,12 @@ if (checkVariables()) {
                 return;
             }
         }
-        
+
         if (getBalance() < tracking.bet.rounded) {
             stop("out of money");
             return;
         }
-        
+
         if (!testMode) {
             engine.placeBet(tracking.bet.rounded * 100, Math.round(tracking.cashout.rounded * 100));
         }
@@ -270,7 +271,7 @@ if (checkVariables()) {
             console.log(">Betting " + tracking.bet.rounded + " at " + tracking.cashout.rounded + "x; new balance: " + getBalance());
         }
     }
-    
+
     function bust(data) {
         var bust = data.game_crash / 100.0;
         if (tracking.skipping) {
@@ -278,7 +279,7 @@ if (checkVariables()) {
             console.log("Skipped game with bust at " + bust + "x");
             return;
         }
-        
+
         var result = engine.lastGamePlay();
         if (testMode) {
             if (!testFramework.playing) {
@@ -289,7 +290,7 @@ if (checkVariables()) {
                 addTestBalance(tracking.bet.rounded * tracking.cashout.rounded);
             }
         }
-        
+
         if (result == "LOST") {
             if (onLose.reset) {
                 reset();
@@ -298,10 +299,10 @@ if (checkVariables()) {
                 applySettings(onLose);
             }
             log(result, bust);
-            
+
             tracking.losses += 1;
             tracking.wins = 0;
-            
+
             if (max.losses && tracking.losses >= max.losses) {
                 stop("reached max losses");
                 return;
@@ -310,7 +311,7 @@ if (checkVariables()) {
                 stop("reached max loss");
                 return;
             }
-            
+
             applySkip(onLose.skip, bust);
         }
         else if (result == "WON") {
@@ -321,15 +322,15 @@ if (checkVariables()) {
                 applySettings(onWin);
             }
             log(result, bust);
-            
+
             if (stopAfterWin) {
                 stop("!stopAfterWin applied");
                 return;
             }
-            
+
             tracking.wins += 1;
             tracking.losses = 0;
-            
+
             if (max.wins && tracking.wins >= max.wins) {
                 stop("reached max wins");
                 return;
@@ -338,17 +339,17 @@ if (checkVariables()) {
                 stop("reached max win");
                 return;
             }
-            
+
             applySkip(onWin.skip, bust);
         }
     }
-    
+
     function startCustom(info) {
         if ((customPosition + 1) > custom.strategy.length) {
             stop("custom strategy busted");
             return;
         }
-        
+
         var entry = custom.strategy[customPosition];
         if (entry == null) {
             console.log("Skipping game.");
@@ -361,7 +362,7 @@ if (checkVariables()) {
             stop("out of money");
             return;
         }
-        
+
         if (!testMode) {
             engine.placeBet(entry.bet * 100, entry.cashout * 100);
         }
@@ -371,7 +372,7 @@ if (checkVariables()) {
             console.log(">Betting " + entry.bet + " at " + entry.cashout + "x; new balance: " + getBalance());
         }
     }
-    
+
     function bustCustom(data) {
         var bust = data.game_crash / 100.0;
         var result = engine.lastGamePlay();
@@ -389,12 +390,12 @@ if (checkVariables()) {
                 addTestBalance(entry.bet * entry.cashout);
             }
         }
-        
+
         if (result == "NOT_PLAYED" && customPosition > 0) {
             logCustom(result, bust);
             customPosition++;
         }
-        
+
         if (result == "LOST") {
             logCustom(result, bust);
             customPosition++;
@@ -408,14 +409,14 @@ if (checkVariables()) {
             resetCustom();
         }
     }
-    
+
     function startNyan(info) {
         var bet = nyan.getBet().totalBet;
         if (getBalance() < bet) {
             stop("out of money");
             return;
         }
-        
+
         if (!testMode) {
             engine.placeBet(bet * 100, nyan.value * 100);
         }
@@ -424,8 +425,15 @@ if (checkVariables()) {
             testFramework.playing = true;
             console.log(">Looking for nyan; betting " + bet + "; new balance: " + getBalance());
         }
+
+        nyan.games += 1;
+        nyan.totalGames += 1;
+
+        if (nyan.totalGames >= nyanChase.maxBets) {
+            console.log("Last chance to catch nyan!");
+        }
     }
-    
+
     function bustNyan(data) {
         var bet = nyan.getBet();
         var bust = data.game_crash / 100.0;
@@ -439,13 +447,10 @@ if (checkVariables()) {
                 addTestBalance(bet.totalBet * nyan.value);
             }
         }
-        
-        nyan.games += 1;
-        nyan.totalGames += 1;
-            
-        if (result == "LOST") {  
+
+        if (result == "LOST") {
             logNyan(result, bust);
-            
+
             if (nyanChase.maxBets && nyan.totalGames >= nyanChase.maxBets) {
                 if (nyanChase.resumeBettingAfterStop) {
                     nyanChase.enabled = false;
@@ -457,7 +462,7 @@ if (checkVariables()) {
                     return;
                 }
             }
-            
+
             if (nyan.games >= bet.maxGamesAtBet) {
                 nyan.multiplier++;
                 nyan.games = 0;
@@ -466,12 +471,12 @@ if (checkVariables()) {
         else if (result == "WON") {
             logNyan(result, bust);
             console.log("Caught nyan! It only took " + nyan.totalGames + " game" + (nyan.totalGames > 1 ? "s." : "."));
-            
+
             if (stopAfterWin) {
                 stop("!stopAfterWin applied");
                 return;
             }
-            
+
             if (nyanChase.stopOnSuccess) {
                 if (nyanChase.resumeBettingAfterStop || nyan.forceResumeBetting) {
                     nyanChase.enabled = false;
@@ -564,7 +569,7 @@ function reset() {
             console.log("Automatically adjusted base bet to " + base.bet);
         }
     }
-    
+
     tracking.bet.real = base.bet;
     tracking.cashout.real = base.cashout;
     round();
@@ -587,13 +592,13 @@ function applySettings(settings) {
     if (tracking.bet.real < 1) {
         tracking.bet.real = 1;
     }
-    
+
     tracking.cashout.real *= settings.multiplyCashout;
     tracking.cashout.real += settings.increaseCashout;
     if (tracking.cashout.real < 1) {
         tracking.cashout.real = 1.0;
     }
-    
+
     round();
 }
 
@@ -652,7 +657,7 @@ function stop(message) {
 
 function checkVariables() {
     var errors = false;
-    
+
     if (base.bet < 1) {
         console.error("base.bet must be at least 1.");
         errors = true;
@@ -748,14 +753,26 @@ function checkVariables() {
         console.error("nyanChase.baseBet must be at least 1.");
         errors = true;
     }
-    if (nyanChase.maxBets != null && nyanChase.maxBets < 1) {
-        console.error("nyanChase.maxBets must be at least 1. Use null to disable.");
-        error = true;
+    if (nyanChase.maxBets != null) {
+        if (nyanChase.maxBets < 1) {
+            console.error("nyanChase.maxBets must be at least 1. Use null to disable.");
+            errors = true;
+        }
+        else {
+            var maxBets = 0;
+            for (var ii = 1; ii < nyanValue; ii++) {
+                maxBets += Math.floor(nyanValue / ii);
+            }
+            if (nyanChase.maxBets > maxBets) {
+                console.error("nyanChase.maxBets cannot be higher than " + maxBets + ". When chasing a bust of " + nyanValue + "x, nyanChase.maxBets above " + maxBets + " will lose money even on a catch.");
+                errors = true;
+            }
+        }
     }
-    
+
     if (errors) {
         console.error("Please fix script and try again.");
     }
-    
+
     return !errors;
 }
