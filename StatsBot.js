@@ -17,7 +17,7 @@
                                             A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
                                             For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
-    - !max[ A[ B[ C]]]                        
+    - !max[ A[ B[ C]]]
       !maximum[ A[ B[ C]]]:                 Returns the highest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
                                             A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
                                             For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
@@ -65,7 +65,7 @@
       !nyan#
       !n #
       !nyan #
-      !nx#                               
+      !nx#
       !nyanx#:                              Returns the last # of nyans, which are a bust >= 1000.00.
                                             This is equivalent to calling "!bust nyanx#";
     - !getnyan:                             Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
@@ -76,10 +76,10 @@
                                             If you are running your own copy of the script, you may want to replace the nano address with your own.
     - !script
       !scripts                              Provides links to commonly-used scripts.
-    
+
     Mentioning the name of the account running this script in chat will trigger a snarky response.
     Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
-    
+
     The following commands can be called by the account running this script:
     - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
                       This will also trigger in-memory games to get stored to localStorage for the next run.
@@ -98,7 +98,10 @@ var _ignore = [
 ];
 engine.on("msg", function (data) {
     if (data.message) {
-        var message = data.message.toLowerCase(); /* Easier for downstream processing to do this in one place. */
+        /* Easier for downstream processing to do all this in one place. */
+        var message = data.message.toLowerCase()
+                                  .replace(_regex.charFilter, "");
+
         if (data.username == _scriptUsername) {
             if (message == "!stop") {
                 cacheResults();
@@ -200,7 +203,7 @@ engine.on("msg", function (data) {
 
 function processByLength(message, action) {
     /* Get the lengths that come after the command. */
-    var lengths = message.split(" ").filter(function (ii) { return ii; });
+    var lengths = message.match(_regex.lengthArgs);
     lengths = lengths.slice(1);
 
     /* Check input. */
@@ -209,54 +212,52 @@ function processByLength(message, action) {
         lengths.push("100");
     }
     else if (lengths.length > 3) {
-        say("Please limit to three arguments in one request.");
+        say("Please limit to 3 arguments.");
         return;
     }
-    
+
     /* Clear duplicates. */
     lengths = unique(lengths);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < lengths.length; ii++) {
         var text = lengths[ii];
-        var length = parseInt(text);
-        
-        if (length > _games.length) {
-            lengths[ii] = length = _games.length.toString();
-        }
-        
-        if (isNaN(length)) { /* Check for NaN. */
-            if (text.indexOf("all") >= 0) {
-                lengths[ii] = length = _games.length.toString();
-            }
-            else {
-                say("Wrong format: " + text);
-                return;
-            }
-        }
-        else if (length < 1) {
-            say("Please target at least 1 game: " + text);
+        var match = _regex.length.exec(text);
+        if (!match) {
+            say("Wrong format: " + text);
             return;
         }
-        else if (text.indexOf("x") > 0) {
-            var parts = text.split("x");
-            if (parts.length < 2) {
-                say("Wrong format: " + text);
-                return;
-            }
-            else {
-                var sets = parseInt(parts[1]);
-                if (isNaN(sets)) {
+        else {
+            var length = match.groups["length"];
+            var parsed = parseInt(length);
+            if (isNaN(parsed)) {
+                if (length == "all") {
+                    lengths[ii] = _games.length.toString();
+                }
+                else {
                     say("Wrong format: " + text);
                     return;
                 }
-                else if (sets < 1 || sets > 5) {
+            }
+            else if (parsed > _games.length) {
+                lengths[ii] = _games.length.toString();
+            }
+            else if (parsed < 1) {
+                say("Please target at least 1 game: " + text);
+                return;
+            }
+            else {
+                var sets = parseInt(match.groups["sets"]);
+                if (sets != null && (sets < 1 || sets > 5)) {
                     say("Please target between 1 and 5 sets: " + text);
                     return;
                 }
             }
         }
     }
+
+    /* Clear duplicates again (in case there was more than argument that changed into _games.length). */
+    lengths = unique(lengths);
 
     /* Process request. */
     var results = [];
@@ -265,12 +266,10 @@ function processByLength(message, action) {
     for (var ii = 0; ii < lengths.length; ii++) {
         var text = lengths[ii];
         response += text + " ";
-        var length = parseInt(text);
 
-        var sets = 1;
-        if (text.indexOf("x") > 0) {
-            sets = parseInt(text.split("x")[1]);
-        }
+        var match = _regex.length.exec(text);
+        var length = parseInt(match.groups["length"]);
+        var sets = parseInt(match.groups["sets"]) || 1;
 
         var result = "";
         for (var jj = 0; jj < sets; jj++) {
@@ -292,7 +291,7 @@ function processByLength(message, action) {
 
 function processByBust(message, action) {
     /* Get the cashouts that come after the command. */
-    var cashouts = message.split(" ").filter(function (ii) { return ii; });
+    var cashouts = message.match(_regex.bustArgs);
     cashouts = cashouts.slice(1);
 
     /* Check input. */
@@ -301,58 +300,49 @@ function processByBust(message, action) {
         cashouts.push("2");
     }
     else if (cashouts.length > 3) {
-        say("Please limit to three arguments in one request.");
+        say("Please limit to 3 arguments.");
         return;
     }
-    
+
     /* Clear duplicates. */
     cashouts = unique(cashouts);
 
     /* Check for invalid arguments. */
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
-
-        var cashout;
-        if (text.startsWith("<") || text.startsWith(">")) {
-            cashout = parseFloat(text.substring(1));
-        }
-        else {
-            cashout = parseFloat(text);
-        }
-
-        /* Support nyan. */
-        if (text.indexOf("nyan") >= 0 || text.indexOf("n") >= 0) {
-            cashout = 1000;
-            cashouts[ii] = cashouts[ii].replace("nyan", cashout).replace("n", cashout);
-        }
-        
-        if (isNaN(cashout)) { /* Check for NaN. */
+        var match = _regex.bust.exec(text);
+        if (!match) {
             say("Wrong format: " + text);
             return;
         }
-        else if (cashout < 1 && (cashout != 0 || !text.startsWith("0"))) { /* 0x is a special case. */
-            say("Please target a cashout of at least 1: " + text);
-            return;
-        }
-        else if (text.indexOf("x") > 0) {
-            var parts = text.split("x");
-            if (parts.length < 2) {
-                say("Wrong format: " + text);
-                return;
-            }
-            else {
-                var streak = parseInt(parts[1]);
-                if (isNaN(streak)) {
+        else {
+            var cashout = match.groups["bust"];
+            var parsed = parseFloat(cashout);
+            if (isNaN(parsed)) {
+                if (cashout == "n" || cashout == "nyan") {
+                    cashouts[ii] = cashouts[ii].replace(cashout, "1000");
+                }
+                else {
                     say("Wrong format: " + text);
                     return;
                 }
-                else if (streak < 1 || streak > 20) {
-                    say("Please target a streak between 1 and 20: " + text);
+            }
+            else if (parsed < 1 && (parsed != 0 || below)) { /* 0x is a special case. */
+                say("Please target a cashout of at least 1: " + text);
+                return;
+            }
+            else {
+                var streak = parseInt(match.groups["streak"]);
+                if (streak != null && streak < 1) {
+                    say("Please target a streak of at least 1: " + text);
                     return;
                 }
             }
         }
     }
+
+    /* Clear duplicates again (in case there was more than argument that changed into 1000). */
+    cashouts = unique(cashouts);
 
     /* Process request. */
     var results = [];
@@ -361,19 +351,17 @@ function processByBust(message, action) {
     for (var ii = 0; ii < cashouts.length; ii++) {
         var text = cashouts[ii];
         response += text + " ";
-        
-        if (parseFloat(text) == 0) { /* 0x is a special case. */
-            text = text.replace("0", "<1");
+
+        var match = _regex.bust.exec(text);
+        var below = match.groups["below"];
+        var cashout = parseFloat(match.groups["bust"]);
+        var streak = parseInt(match.groups["streak"]);
+
+        if (cashout == 0) { /* 0x is a special case. */
+            below = true;
+            cashout = 1;
         }
-        
-        var below = false;
-        if (text.startsWith("<") || text.startsWith(">")) {
-            if (text.startsWith("<")) {
-                below = true;
-            }
-            text = text.substring(1);
-        }
-        results.push(action(text, below)); /* Let the action interpret the x#. */
+        results.push(action(below, cashout, streak)); /* Let the action interpret the streak. */
     }
 
     /* Print result. */
@@ -399,7 +387,7 @@ function processJoking(message, action) {
         say("Please limit to three arguments in one request.");
         return;
     }
-    
+
     /* Clear duplicates. */
     losses = unique(losses);
 
@@ -407,7 +395,7 @@ function processJoking(message, action) {
     for (var ii = 0; ii < losses.length; ii++) {
         var text = losses[ii];
         var loss = parseFloat(text);
-        
+
         if (isNaN(text)) { /* Check for NaN. */
             say("Wrong format: " + text);
             return;
@@ -442,7 +430,6 @@ function processJoking(message, action) {
 ===================================*/
 
 function getNyan() {
-    console.log(localStorage.getItem("nyan"));
     if (!_nyan) {
         var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
@@ -464,7 +451,7 @@ function getNyan() {
 function getNyanMessage() {
     var nyan = getNyan();
     var message = "Yeah, I saw nyan around here. It was about " + (_game.id - nyan.id) + " games ago.."
-    
+
     if (nyan.time) {
         var current = utcDate();
         var minutes = Math.floor((current - nyan.time) / 60000);
@@ -501,7 +488,7 @@ function getNyanMessage() {
             }
         }
     }
-    
+
     message += " Who wants to know?";
     return message;
 }
@@ -516,7 +503,12 @@ function nyanToBust(message) {
         if (arg.startsWith("x")) {
             arg = arg.substring(1);
         }
-        processByBust("!bust nyanx" + arg, bust);
+        if (isNaN(arg) || parseInt(arg) != arg || arg < 1) {
+            say("Wrong format: " + arg);
+        }
+        else {
+            processByBust("!bust nyanx" + arg, bust);
+        }
     }
 }
 
@@ -631,8 +623,8 @@ function max(start, length) {
     }
 }
 
-function probability(cashout, below) {
-    var p = prob(parseFloat(cashout));
+function probability(below, cashout, streak) {
+    var p = prob(cashout);
 
     /* Check for inversion. */
     if (below) {
@@ -640,32 +632,30 @@ function probability(cashout, below) {
     }
 
     /* Check for streak. */
-    if (cashout.indexOf("x") > 0) {
-        var streak = parseInt(cashout.split("x")[1]);
+    if (streak) {
         p = Math.pow(p / 100.0, streak) * 100.0;
     }
 
     return "~" + round(p, 3) + "%";
 }
 
-function bust(cashout, below) {
-    var value = parseFloat(cashout);
-    var find = 1;
-    if (cashout.indexOf("x") > 0) {
-        find = parseInt(cashout.split("x")[1]);
+function bust(below, cashout, streak) {
+    streak = streak || 1;
+    if (streak > 35) {
+        streak = 35; /* Won't be able to print this many anyway. */
     }
 
     var result = "";
     var found = 0;
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if ((below && game.bust < value) || (!below && game.bust >= value)) {
+        if ((below && game.bust < cashout) || (!below && game.bust >= cashout)) {
             if (result) {
                 result += ", ";
             }
             result += (_game.id - game.id) + " games ago (" + game.bust + "x)";
             found++;
-            if (found >= find) {
+            if (found >= streak) {
                 break;
             }
         }
@@ -676,39 +666,37 @@ function bust(cashout, below) {
     return result;
 }
 
-function streak(cashout, below) {
-    var value = parseFloat(cashout);
-    var find;
-    if (cashout.indexOf("x") > 0) {
-        find = parseInt(cashout.split("x")[1]);
-    }
-
+function streak(below, cashout, streak) {
     var found = [];
     var check = [];
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
-        if ((below && game.bust < value) || (!below && game.bust >= value)) {
+        if ((below && game.bust < cashout) || (!below && game.bust >= cashout)) {
             check.push(game);
-            if (check.length > found.length) {
-                found = check.slice(0); /* Copy the values, not the reference. */
-            }
-            if (find && found.length >= find) {
+            if (streak && check.length >= streak) {
+                found = check;
                 break;
-            }
-            if (found.length > 2000) {
-                return ".. found streak above 2000 ..";
             }
         }
         else {
+            if (check.length > found.length) {
+                found = check;
+            }
+
             /* Clear what we're tracking. */
             check = [];
         }
+    }
+    if (check.length > found.length) {
+        /* Should only happen if we are checking a never-ending streak. */
+        found = check;
     }
 
     /* Start from the first game. */
     found.reverse();
 
     /* List all the games. */
+    var print = (found.length > 120 ? 120 : found.length); /* Won't be able to print this many anyway. */
     var result = "";
     for (var ii = 0; ii < found.length; ii++) {
         if (result) {
@@ -718,11 +706,11 @@ function streak(cashout, below) {
     }
 
     /* Report back. */
-    if (find && found.length >= find) {
+    if (streak && found.length >= streak) {
         result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
-    else if (!find) {
+    else if (!streak) {
         result = "seen " + found.length + " streak " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
@@ -763,7 +751,7 @@ function jokingBust4(losses) {
 
 function jokingBust(streak) {
     streak.reverse(); /* The order in which we'll come across the games. */
-    
+
     var found = [];
     for (var ii = 0; ii < _games.length; ii++) {
         var game = _games[ii];
@@ -793,7 +781,7 @@ function jokingBust(streak) {
             }
             result += found[ii].bust + "x";
         }
-        
+
         result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
         return result;
     }
@@ -801,6 +789,21 @@ function jokingBust(streak) {
         return "never seen";
     }
 }
+
+/*==================================
+ Regex.
+===================================*/
+
+var _regex = {
+    charFilter: /[>,]/g,
+
+    lengthArgs: /[^ ]+/g,
+    bustArgs: /(?:[<>] *)?[^ <>]+/g,
+
+    /* If you use a global filter here, you're gonna have a bad time. */
+    length: /^(?<length>[0-9]+|all)?(?:x(?<sets>[0-9]+))?$/,
+    bust: /^(?<below><(?: *)?)?(?<bust>[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:x(?<streak>[0-9]+))?$/
+};
 
 /*==================================
  Games management.
@@ -830,7 +833,7 @@ engine.on("game_crash", function (data) {
 
                 lastHash = gameHash;
             }
-            _games = concatArrays(missing, _games);
+            _games = missing.concat(_games);
             if (_games[0].id == _game.id) {
                 _caughtUp = true;
                 cacheResults();
@@ -941,7 +944,7 @@ function getCachedResults() {
         cached.push(record);
     }
     console.log("Pulled " + lines.length + " games from remote server.");
-    
+
     _maxServerCache = cached[0].id;
 
     /* Pull locally-stored results. */
@@ -949,7 +952,7 @@ function getCachedResults() {
     if (local) {
         var length = local[0].id - cached[0].id;
         local = local.slice(0, length); /* Only pull the missing games.  This handles the case where the remote server cache is updated. */
-        concatArrays(local, cached);
+        cached = local.concat(cached);
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
 
@@ -1019,20 +1022,15 @@ function loadScript(url) {
     document.getElementsByTagName("head")[0].appendChild(script);
 }
 
-function concatArrays(first, second) {
-    var result = new Array(first.length + second.length);
-    var secondStart = first.length;
-    for (var ii = 0; ii < first.length; ii++) {
-        result[ii] = first[ii];
-    }
-    for (var ii = 0; ii < second.length; ii++) {
-        result[ii + secondStart] = second[ii];
-    }
-    return result;
-}
-
 function round(value, decimals) {
-    return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+    if (value.toString().indexOf("e-") > -1) {
+        /* The below won't work if we add an exponent, since the value already has one.
+           However, if it already have one, then the value is low enough we can just count it as 0. */
+        return 0;
+    }
+    else {
+        return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+    }
 }
 
 function unique(args) {
