@@ -346,8 +346,8 @@ function processByBust(message, action) {
                     say("Wrong format: " + text);
                     return;
                 }
-                else if (streak < 1 || streak > 20) {
-                    say("Please target a streak between 1 and 20: " + text);
+                else if (streak < 1) {
+                    say("Please target a streak of at least 1: " + text);
                     return;
                 }
             }
@@ -442,7 +442,6 @@ function processJoking(message, action) {
 ===================================*/
 
 function getNyan() {
-    console.log(localStorage.getItem("nyan"));
     if (!_nyan) {
         var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
@@ -653,6 +652,9 @@ function bust(cashout, below) {
     var find = 1;
     if (cashout.indexOf("x") > 0) {
         find = parseInt(cashout.split("x")[1]);
+        if (find > 35) {
+            find = 35; /* Won't be able to print this many anyway. */
+        }
     }
 
     var result = "";
@@ -689,26 +691,30 @@ function streak(cashout, below) {
         var game = _games[ii];
         if ((below && game.bust < value) || (!below && game.bust >= value)) {
             check.push(game);
-            if (check.length > found.length) {
-                found = check.slice(0); /* Copy the values, not the reference. */
-            }
-            if (find && found.length >= find) {
+            if (find && check.length >= find) {
+                found = check;
                 break;
-            }
-            if (found.length > 2000) {
-                return ".. found streak above 2000 ..";
             }
         }
         else {
+            if (check.length > found.length) {
+                found = check;
+            }
+            
             /* Clear what we're tracking. */
             check = [];
         }
+    }
+    if (check.length > found.length) {
+        /* Should only happen if we are checking a never-ending streak. */
+        found = check;
     }
 
     /* Start from the first game. */
     found.reverse();
 
     /* List all the games. */
+    var print = (found.length > 120 ? 120 : found.length); /* Won't be able to print this many anyway. */
     var result = "";
     for (var ii = 0; ii < found.length; ii++) {
         if (result) {
@@ -830,7 +836,7 @@ engine.on("game_crash", function (data) {
 
                 lastHash = gameHash;
             }
-            _games = concatArrays(missing, _games);
+            _games = missing.concat(_games);
             if (_games[0].id == _game.id) {
                 _caughtUp = true;
                 cacheResults();
@@ -949,7 +955,7 @@ function getCachedResults() {
     if (local) {
         var length = local[0].id - cached[0].id;
         local = local.slice(0, length); /* Only pull the missing games.  This handles the case where the remote server cache is updated. */
-        concatArrays(local, cached);
+        cached = local.concat(cached);
     }
     console.log("Pulled " + (local ? local.length : 0) + " games from localStorage.");
 
@@ -1019,20 +1025,15 @@ function loadScript(url) {
     document.getElementsByTagName("head")[0].appendChild(script);
 }
 
-function concatArrays(first, second) {
-    var result = new Array(first.length + second.length);
-    var secondStart = first.length;
-    for (var ii = 0; ii < first.length; ii++) {
-        result[ii] = first[ii];
-    }
-    for (var ii = 0; ii < second.length; ii++) {
-        result[ii + secondStart] = second[ii];
-    }
-    return result;
-}
-
 function round(value, decimals) {
-    return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+    if (value.toString().indexOf("e-") > -1) {
+        /* The below won't work if we add an exponent, since the value already has one.
+           However, if it already have one, then the value is low enough we can just count it as 0. */
+        return 0;
+    }
+    else {
+        return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+    }
 }
 
 function unique(args) {
