@@ -69,6 +69,8 @@
       !nyanx#:                              Returns the last # of nyans, which are a bust >= 1000.00.
                                             This is equivalent to calling "!bust nyanx#";
     - !getnyan:                             Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
+    - !s N
+      !seen N:                              Provides the last time this script has seen the user specified as N.
     - !help:                                Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
     - !helpline:                            Provides information about the National Problem Gambling Helpline.
     - !donate
@@ -88,6 +90,15 @@
 */
 
 /*==================================
+ External resources.
+===================================*/
+
+loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js");
+loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/sha256.js");
+loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/hmac.js");
+pause(200); /* Let the resources load before continuing. */
+
+/*==================================
  Request management.
 ===================================*/
 
@@ -98,6 +109,7 @@ var _ignore = [
 ];
 engine.on("msg", function (data) {
     if (data.message) {
+        var channel = data.channelName;
         /* Easier for downstream processing to do all this in one place. */
         var message = data.message.toLowerCase()
                                   .replace(_regex.charFilter, "");
@@ -105,36 +117,36 @@ engine.on("msg", function (data) {
         if (data.username == _scriptUsername) {
             if (message == "!stop") {
                 cacheResults();
-                say("Script shutting down.");
+                say(channel, "Script shutting down.");
                 engine.stop();
                 return;
             }
             else if (message == "!clearhistory") {
                 clearCachedResults();
-                say("Script shutting down.");
+                say(channel, "Script shutting down.");
                 engine.stop();
                 return;
             }
         }
         if (message == "!help") {
-            say("You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
-            say("If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
+            say(channel, "You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
+            say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
         }
         else if (message == "!helpline") {
-            say("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+            say(channel, "National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
         }
         else if (message == "!donate") {
-            say("Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
+            say(channel, "Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
         }
         else if (message == "!tip") {
-            say("Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
+            say(channel, "Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
         }
         else if (message == "!script" || message == "!scripts") {
-            say("Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
-            say("If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
-            say("Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
+            say(channel, "Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
+            say(channel, "If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
+            say(channel, "Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
         }
-        else if (message.indexOf(_scriptUsername.toLowerCase()) > -1) {
+        else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
             snark();
         }
         else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
@@ -149,50 +161,53 @@ engine.on("msg", function (data) {
         else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
             processByBust(message, probability);
         }
+        else if (message.startsWith("!s ") || message.startsWith("!seen ")) { /* Checking for space to make sure that this doesn't override !streak. */
+            seen(channel, message, data.message);
+        }
         else if (!_caughtUp) {
             /* Script isn't ready to respond to the requests below yet. */
             return;
         }
         else if (message == "!n" || message == "!nyan") {
             var nyan = getNyanMessage();
-            say(nyan);
+            say(channel, nyan);
         }
         else if (message == "!getnyan") {
             var nyan = getNyan();
-            say("Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
+            say(channel, "Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
         }
         else if (message.startsWith("!n") || message.startsWith("!nyan")) {
-            nyanToBust(message);
+            nyanToBust(channel, message);
         }
         else if (message.startsWith("!med") || message.startsWith("!median")) {
             processByLength(message, median);
         }
         else if (message.startsWith("!mean") || message.startsWith("!avg") || message.startsWith("!average")) {
-            processByLength(message, average);
+            processByLength(channel, message, average);
         }
         else if (message.startsWith("!mode")) {
-            processByLength(message, mode);
+            processByLength(channel, message, mode);
         }
         else if (message.startsWith("!min") || message.startsWith("!minimum")) {
-            processByLength(message, min);
+            processByLength(channel, message, min);
         }
         else if (message.startsWith("!max") || message.startsWith("!maximum")) {
-            processByLength(message, max);
+            processByLength(channel, message, max);
         }
         else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
-            processJoking(message, jokingBust125);
+            processJoking(channel, message, jokingBust125);
         }
         else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
-            processJoking(message, jokingBust4);
+            processJoking(channel, message, jokingBust4);
         }
         else if (message.startsWith("!bst") || message.startsWith("!bust")) {
-            processByBust(message, bust);
+            processByBust(channel, message, bust);
         }
         else if (message.startsWith("!streak")) {
-            processByBust(message, streak);
+            processByBust(channel, message, streak);
         }
         else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
-            say("I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
+            say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
         }
     }
 });
@@ -201,7 +216,7 @@ engine.on("msg", function (data) {
  Request processing.
 ===================================*/
 
-function processByLength(message, action) {
+function processByLength(channel, message, action) {
     /* Get the lengths that come after the command. */
     var lengths = message.match(_regex.lengthArgs);
     lengths = lengths.slice(1);
@@ -212,7 +227,7 @@ function processByLength(message, action) {
         lengths.push("100");
     }
     else if (lengths.length > 3) {
-        say("Please limit to 3 arguments.");
+        say(channel, "Please limit to 3 arguments.");
         return;
     }
 
@@ -224,7 +239,7 @@ function processByLength(message, action) {
         var text = lengths[ii];
         var match = _regex.length.exec(text);
         if (!match) {
-            say("Wrong format: " + text);
+            say(channel, "Wrong format: " + text);
             return;
         }
         else {
@@ -235,7 +250,7 @@ function processByLength(message, action) {
                     lengths[ii] = _games.length.toString();
                 }
                 else {
-                    say("Wrong format: " + text);
+                    say(channel, "Wrong format: " + text);
                     return;
                 }
             }
@@ -243,13 +258,13 @@ function processByLength(message, action) {
                 lengths[ii] = _games.length.toString();
             }
             else if (parsed < 1) {
-                say("Please target at least 1 game: " + text);
+                say(channel, "Please target at least 1 game: " + text);
                 return;
             }
             else {
                 var sets = parseInt(match.groups["sets"]);
                 if (sets != null && (sets < 1 || sets > 5)) {
-                    say("Please target between 1 and 5 sets: " + text);
+                    say(channel, "Please target between 1 and 5 sets: " + text);
                     return;
                 }
             }
@@ -286,10 +301,10 @@ function processByLength(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    say(response);
+    say(channel, response);
 }
 
-function processByBust(message, action) {
+function processByBust(channel, message, action) {
     /* Get the cashouts that come after the command. */
     var cashouts = message.match(_regex.bustArgs);
     cashouts = cashouts.slice(1);
@@ -297,10 +312,10 @@ function processByBust(message, action) {
     /* Check input. */
     if (cashouts.length == 0) {
         /* Default to 2x. */
-        cashouts.push("2");
+        cashouts.push(channel, "2");
     }
     else if (cashouts.length > 3) {
-        say("Please limit to 3 arguments.");
+        say(channel, "Please limit to 3 arguments.");
         return;
     }
 
@@ -312,7 +327,7 @@ function processByBust(message, action) {
         var text = cashouts[ii];
         var match = _regex.bust.exec(text);
         if (!match) {
-            say("Wrong format: " + text);
+            say(channel, "Wrong format: " + text);
             return;
         }
         else {
@@ -323,18 +338,18 @@ function processByBust(message, action) {
                     cashouts[ii] = cashouts[ii].replace(cashout, "1000");
                 }
                 else {
-                    say("Wrong format: " + text);
+                    say(channel, "Wrong format: " + text);
                     return;
                 }
             }
             else if (parsed < 1 && (parsed != 0 || below)) { /* 0x is a special case. */
-                say("Please target a cashout of at least 1: " + text);
+                say(channel, "Please target a cashout of at least 1: " + text);
                 return;
             }
             else {
                 var streak = parseInt(match.groups["streak"]);
                 if (streak != null && streak < 1) {
-                    say("Please target a streak of at least 1: " + text);
+                    say(channel, "Please target a streak of at least 1: " + text);
                     return;
                 }
             }
@@ -370,10 +385,10 @@ function processByBust(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    say(response);
+    say(channel, response);
 }
 
-function processJoking(message, action) {
+function processJoking(channel, message, action) {
     /* Get the losses that come after the command. */
     var losses = message.split(" ").filter(function (ii) { return ii; });
     losses = losses.slice(2);
@@ -384,7 +399,7 @@ function processJoking(message, action) {
         losses.push("5");
     }
     else if (losses.length > 3) {
-        say("Please limit to three arguments in one request.");
+        say(channel, "Please limit to three arguments in one request.");
         return;
     }
 
@@ -397,11 +412,11 @@ function processJoking(message, action) {
         var loss = parseFloat(text);
 
         if (isNaN(text)) { /* Check for NaN. */
-            say("Wrong format: " + text);
+            say(channel, "Wrong format: " + text);
             return;
         }
         else if (loss != Math.floor(loss) || loss < 3 || loss > 9) {
-            say("Please target a loss streak between 3 and 9: " + text);
+            say(channel, "Please target a loss streak between 3 and 9: " + text);
             return;
         }
     }
@@ -422,7 +437,7 @@ function processJoking(message, action) {
         response += " " + results[ii] + "; ";
     }
     response = response.substring(0, response.length - 2); /* Trim final semicolon. */
-    say(response);
+    say(channel, response);
 }
 
 /*==================================
@@ -451,63 +466,28 @@ function getNyan() {
 function getNyanMessage() {
     var nyan = getNyan();
     var message = "Yeah, I saw nyan around here. It was about " + (_game.id - nyan.id) + " games ago.."
-
     if (nyan.time) {
-        var current = utcDate();
-        var minutes = Math.floor((current - nyan.time) / 60000);
-        minutes = Math.round(minutes / 5.0) * 5; /* Round to the nearest 5 minutes. */
-        if (minutes >= 5) {
-            var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
-            if (hours < 1) {
-                message += " maybe " + minutes + " minutes.";
-            }
-            else if (hours < 2) {
-                message += " maybe an hour";
-                if (hours > 1) {
-                    message += " and a half"
-                }
-                message += "."
-            }
-            else {
-                var days = Math.round(hours / 6) / 4; /* Include quarter days. */
-                if (days < 1) {
-                    message += " maybe " + hours + " hours.";
-                }
-                else if (days == 1) {
-                    message += " maybe a day.";
-                }
-                else {
-                    if (days >= 10) {
-                        days = Math.round(hours / 24); /* Only whole days. */
-                    }
-                    else if (days >= 3) {
-                        days = Math.round(hours / 12) / 2; /* Only half days. */
-                    }
-                    message += " maybe " + days + " days.";
-                }
-            }
-        }
+        message += " " + timeAgo(nyan.time) + ".";
     }
-
     message += " Who wants to know?";
     return message;
 }
 
-function nyanToBust(message) {
+function nyanToBust(channel, message) {
     var index = message.indexOf("nyan") > -1 ? 5 : 2;
     var arg = message.substring(index).trim();
     if (arg.indexOf(" ") > -1) {
-        say("Wrong format: " + arg);
+        say(channel, "Wrong format: " + arg);
     }
     else {
         if (arg.startsWith("x")) {
             arg = arg.substring(1);
         }
         if (isNaN(arg) || parseInt(arg) != arg || arg < 1) {
-            say("Wrong format: " + arg);
+            say(channel, "Wrong format: " + arg);
         }
         else {
-            processByBust("!bust nyanx" + arg, bust);
+            processByBust(channel, "!bust nyanx" + arg, bust);
         }
     }
 }
@@ -800,9 +780,12 @@ var _regex = {
     lengthArgs: /[^ ]+/g,
     bustArgs: /(?:[<>] *)?[^ <>]+/g,
 
-    /* If you use a global filter here, you're gonna have a bad time. */
+    /* If you use a global flag here, you're gonna have a bad time. */
+
     length: /^(?<length>[0-9]+|all)?(?:x(?<sets>[0-9]+))?$/,
-    bust: /^(?<below><(?: *)?)?(?<bust>[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:x(?<streak>[0-9]+))?$/
+    bust: /^(?<below><(?: *)?)?(?<bust>[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:x(?<streak>[0-9]+))?$/,
+
+    username: /^[A-Za-z0-9_\-]{3,16}$/
 };
 
 /*==================================
@@ -816,6 +799,7 @@ var _nyan;
 
 engine.on("game_crash", function (data) {
     if (_game) {
+        var channel = "english"; /* Alert in the main channel, which is English. */
         _game.bust = data.game_crash / 100.0;
         if (_games[0].id < (_game.id - 1)) {
             /* If this is the first run in a while, this could take a few seconds.
@@ -837,7 +821,7 @@ engine.on("game_crash", function (data) {
             if (_games[0].id == _game.id) {
                 _caughtUp = true;
                 cacheResults();
-                say("Script ready. Ask me anything.");
+                say(channel, "Script ready. Ask me anything.");
             }
         }
         else {
@@ -845,7 +829,7 @@ engine.on("game_crash", function (data) {
             if (!_caughtUp) {
                 _caughtUp = true;
                 cacheResults();
-                say("Script ready. Ask me anything.");
+                say(channel, "Script ready. Ask me anything.");
             }
         }
 
@@ -857,10 +841,10 @@ engine.on("game_crash", function (data) {
             localStorage.setItem("nyan", JSON.stringify(_nyan));
         }
         else if (_game.bust >= 900.00) {
-            say("Ooh, so close!");
+            say(channel, "Ooh, so close!");
         }
         else if (_game.bust == 0.00) {
-            say("Ouch..");
+            say(channel, "Ouch..");
         }
     }
 });
@@ -868,6 +852,102 @@ engine.on("game_starting", function (data) {
     _game = {};
     _game.id = data.game_id;
 });
+
+/*==================================
+ Player tracking.
+===================================*/
+
+var _players = JSON.parse(localStorage.getItem("players")) || {};
+
+function seen(channel, message, original) {
+    var index = message.startsWith("!seen") ? 5 : 2;
+    var username = original.substring(index).trim();
+    if (username.startsWith("@")) {
+        username = username.substring(1);
+    }
+
+    if (_regex.username.test(username)) {
+        if (username.toLowerCase() == _scriptUsername.toLowerCase()) {
+            say(channel, "I'm right here!");
+        }
+        else {
+            var player = getUserInfo(username);
+            if (!player) {
+                say(channel, "I don't think \"" + username + "\" is a real person.");
+            }
+            else {
+                var info;
+                if (!player.play && !player.chat) {
+                    info = "I can't remember the last time I saw @" + player.username + "."
+                }
+                else if (player.play && player.chat) {
+                    var play = timeAgo(player.play);
+                    var chat = timeAgo(player.chat);
+                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + " ago and in the chat " + (chat ? chat + " ago" : "just now") + " ago.";
+                }
+                else if (player.play) {
+                    var play = timeAgo(player.play);
+                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + " ago, but I can't remember the last time I saw them in the chat.";
+                }
+                else {
+                    var chat = timeAgo(player.chat);
+                    info = "I saw @" + player.username + " in the chat " + (chat ? chat + " ago" : "just now") + ", but I can't remember the last time I saw them playing.";
+                }
+                say(channel, info);
+            }
+        }
+    }
+    else {
+        say(channel, "I don't think \"" + username + "\" is a real person.");
+    }
+}
+
+engine.on("msg", function (data) {
+    if (data.message && data.username != _scriptUsername) {
+        var username = "_" + data.username;
+        if (_players.hasOwnProperty(username)) {
+            _players[username].chat = utcDate();
+        }
+        else {
+            _players[username] = {
+                chat: utcDate()
+            };
+        }
+        localStorage.setItem("players", JSON.stringify(_players));
+    }
+});
+
+function getUserInfo(username) {
+    try {
+        var call = new XMLHttpRequest();
+        call.open("GET", "/user/" + username, false); /* Block, don't do this asynchronously. */
+        call.send(null);
+        var page = call.responseText;
+
+        var usernameIndex = page.indexOf("<b>", page.indexOf("Player:")) + 3;
+        username = page.substring(usernameIndex, page.indexOf("</b>", usernameIndex));
+
+        var playIndex = page.indexOf("20", page.indexOf("created"));
+        var play = new Date(page.substring(playIndex, page.indexOf("Z", playIndex) + 1)).getTime();
+
+        var player;
+        if (_players.hasOwnProperty("_" + username)) {
+            _players["_" + username].play = play;
+			player = _players["_" + username];
+        }
+        else {
+            player = _players["_" + username] = {
+                play: play
+            };
+        }
+        localStorage.setItem("players", JSON.stringify(_players));
+        player.username = username;
+        return player;
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
 
 /*==================================
  Snark.
@@ -921,6 +1001,7 @@ function shibaSnark() {
 ===================================*/
 
 var _scriptUsername = engine.getUsername();
+var _scriptRunningSince = utcDate();
 
 /*==================================
  Cache management.
@@ -974,10 +1055,6 @@ function clearCachedResults() {
  Data creation.
 ===================================*/
 
-loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js");
-loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/sha256.js");
-loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/hmac.js");
-
 function genGameHash(serverSeed) {
     return CryptoJS.SHA256(serverSeed).toString();
 };
@@ -1022,6 +1099,14 @@ function loadScript(url) {
     document.getElementsByTagName("head")[0].appendChild(script);
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function pause(ms) {
+    await sleep(ms);
+}
+
 function round(value, decimals) {
     if (value.toString().indexOf("e-") > -1) {
         /* The below won't work if we add an exponent, since the value already has one.
@@ -1050,7 +1135,45 @@ function prob(cashout) {
     return 99 / (1.01 * (parseFloat(cashout) - 0.01));
 }
 
-function say(message) {
+function timeAgo(time) {
+    var ago;
+    var current = utcDate();
+    var minutes = Math.floor((current - time) / 60000);
+    minutes = Math.round(minutes / 5.0) * 5; /* Round to the nearest 5 minutes. */
+    if (minutes >= 5) {
+        var hours = Math.round(minutes / 30) / 2; /* Include half hours. */
+        if (hours < 1) {
+            ago = "maybe " + minutes + " minutes";
+        }
+        else if (hours < 2) {
+            ago = "maybe an hour";
+            if (hours > 1) {
+                ago += " and a half"
+            }
+        }
+        else {
+            var days = Math.round(hours / 6) / 4; /* Include quarter days. */
+            if (days < 1) {
+                ago = "maybe " + hours + " hours";
+            }
+            else if (days == 1) {
+                ago = "maybe a day";
+            }
+            else {
+                if (days >= 10) {
+                    days = Math.round(hours / 24); /* Only whole days. */
+                }
+                else if (days >= 3) {
+                    days = Math.round(hours / 12) / 2; /* Only half days. */
+                }
+                ago = "maybe " + days + " days";
+            }
+        }
+    }
+    return ago;
+}
+
+function say(channel, message) {
     /* There's a limit of 499 characters per chat message.  This shouldn't be a problem too often, but, if someone does something like "!streak 1" or
        "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
        because I don't want "!streak <1000000" to print out every game that's ever been played. */
