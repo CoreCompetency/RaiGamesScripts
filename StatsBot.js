@@ -159,7 +159,7 @@ engine.on("msg", function (data) {
             processJoking(message, jokingProbability4);
         }
         else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
-            processByBust(message, probability);
+            processByBust(channel, message, probability);
         }
         else if (message.startsWith("!s ") || message.startsWith("!seen ")) { /* Checking for space to make sure that this doesn't override !streak. */
             seen(channel, message, data.message);
@@ -180,7 +180,7 @@ engine.on("msg", function (data) {
             nyanToBust(channel, message);
         }
         else if (message.startsWith("!med") || message.startsWith("!median")) {
-            processByLength(message, median);
+            processByLength(channel, message, median);
         }
         else if (message.startsWith("!mean") || message.startsWith("!avg") || message.startsWith("!average")) {
             processByLength(channel, message, average);
@@ -933,7 +933,7 @@ function getUserInfo(username) {
         var player;
         if (_players.hasOwnProperty("_" + username)) {
             _players["_" + username].play = play;
-			player = _players["_" + username];
+    		player = _players["_" + username];
         }
         else {
             player = _players["_" + username] = {
