@@ -153,10 +153,10 @@ engine.on("msg", function (data) {
             shibaSnark();
         }
         else if (message.startsWith("!prb joking125") || message.startsWith("!prob joking125") || message.startsWith("!probability joking125")) {
-            processJoking(message, jokingProbability125);
+            processJoking(channel, message, jokingProbability125);
         }
         else if (message.startsWith("!prb joking4") || message.startsWith("!prob joking4") || message.startsWith("!probability joking4")) {
-            processJoking(message, jokingProbability4);
+            processJoking(channel, message, jokingProbability4);
         }
         else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
             processByBust(channel, message, probability);
@@ -933,7 +933,7 @@ function getUserInfo(username) {
         var player;
         if (_players.hasOwnProperty("_" + username)) {
             _players["_" + username].play = play;
-    		player = _players["_" + username];
+        	player = _players["_" + username];
         }
         else {
             player = _players["_" + username] = {
