@@ -108,107 +108,113 @@ var _ignore = [
     "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off" /* SoundAlerts. */
 ];
 engine.on("msg", function (data) {
-    if (data.message) {
-        var channel = data.channelName;
-        /* Easier for downstream processing to do all this in one place. */
-        var message = data.message.toLowerCase()
-                                  .replace(_regex.charFilter, "");
+    try {
+        if (data.message) {
+            var channel = data.channelName;
+            /* Easier for downstream processing to do all this in one place. */
+            var message = data.message.toLowerCase()
+                                      .replace(_regex.charFilter, "");
 
-        if (data.username == _scriptUsername) {
-            if (message == "!stop") {
-                cacheResults();
-                say(channel, "Script shutting down.");
-                engine.stop();
+            if (data.username == _scriptUsername) {
+                if (message == "!stop") {
+                    cacheResults();
+                    say(channel, "Script shutting down.");
+                    engine.stop();
+                    return;
+                }
+                else if (message == "!clearhistory") {
+                    clearCachedResults();
+                    say(channel, "Script shutting down.");
+                    engine.stop();
+                    return;
+                }
+            }
+            if (message == "!help") {
+                say(channel, "You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
+                say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
+            }
+            else if (message == "!helpline") {
+                say(channel, "National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+            }
+            else if (message == "!donate") {
+                say(channel, "Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
+            }
+            else if (message == "!tip") {
+                say(channel, "Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
+            }
+            else if (message == "!script" || message == "!scripts") {
+                say(channel, "Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
+                say(channel, "If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
+                say(channel, "Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
+            }
+            else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
+                snark(channel);
+            }
+            else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
+                shibaSnark(channel);
+            }
+            else if (message.startsWith("!prb joking125") || message.startsWith("!prob joking125") || message.startsWith("!probability joking125")) {
+                processJoking(channel, message, jokingProbability125);
+            }
+            else if (message.startsWith("!prb joking4") || message.startsWith("!prob joking4") || message.startsWith("!probability joking4")) {
+                processJoking(channel, message, jokingProbability4);
+            }
+            else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
+                processByBust(channel, message, probability);
+            }
+            else if (message.startsWith("!s ") || message.startsWith("!seen ")) { /* Checking for space to make sure that this doesn't override !streak. */
+                seen(channel, message, data.message);
+            }
+            else if (!_caughtUp) {
+                /* Script isn't ready to respond to the requests below yet. */
                 return;
             }
-            else if (message == "!clearhistory") {
-                clearCachedResults();
-                say(channel, "Script shutting down.");
-                engine.stop();
-                return;
+            else if (message == "!n" || message == "!nyan") {
+                var nyan = getNyanMessage();
+                say(channel, nyan);
+            }
+            else if (message == "!getnyan") {
+                var nyan = getNyan();
+                say(channel, "Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
+            }
+            else if (message.startsWith("!n") || message.startsWith("!nyan")) {
+                nyanToBust(channel, message);
+            }
+            else if (message.startsWith("!med") || message.startsWith("!median")) {
+                processByLength(channel, message, median);
+            }
+            else if (message.startsWith("!mean") || message.startsWith("!avg") || message.startsWith("!average")) {
+                processByLength(channel, message, average);
+            }
+            else if (message.startsWith("!mode")) {
+                processByLength(channel, message, mode);
+            }
+            else if (message.startsWith("!min") || message.startsWith("!minimum")) {
+                processByLength(channel, message, min);
+            }
+            else if (message.startsWith("!max") || message.startsWith("!maximum")) {
+                processByLength(channel, message, max);
+            }
+            else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
+                processJoking(channel, message, jokingBust125);
+            }
+            else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
+                processJoking(channel, message, jokingBust4);
+            }
+            else if (message.startsWith("!bst") || message.startsWith("!bust")) {
+                processByBust(channel, message, bust);
+            }
+            else if (message.startsWith("!streak")) {
+                processByBust(channel, message, streak);
+            }
+            else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
+                say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
             }
         }
-        if (message == "!help") {
-            say(channel, "You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
-            say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
-        }
-        else if (message == "!helpline") {
-            say(channel, "National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
-        }
-        else if (message == "!donate") {
-            say(channel, "Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
-        }
-        else if (message == "!tip") {
-            say(channel, "Tips can be transferred to this account or sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz. Thanks!");
-        }
-        else if (message == "!script" || message == "!scripts") {
-            say(channel, "Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
-            say(channel, "If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
-            say(channel, "Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
-        }
-        else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
-            snark();
-        }
-        else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
-            shibaSnark();
-        }
-        else if (message.startsWith("!prb joking125") || message.startsWith("!prob joking125") || message.startsWith("!probability joking125")) {
-            processJoking(channel, message, jokingProbability125);
-        }
-        else if (message.startsWith("!prb joking4") || message.startsWith("!prob joking4") || message.startsWith("!probability joking4")) {
-            processJoking(channel, message, jokingProbability4);
-        }
-        else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
-            processByBust(channel, message, probability);
-        }
-        else if (message.startsWith("!s ") || message.startsWith("!seen ")) { /* Checking for space to make sure that this doesn't override !streak. */
-            seen(channel, message, data.message);
-        }
-        else if (!_caughtUp) {
-            /* Script isn't ready to respond to the requests below yet. */
-            return;
-        }
-        else if (message == "!n" || message == "!nyan") {
-            var nyan = getNyanMessage();
-            say(channel, nyan);
-        }
-        else if (message == "!getnyan") {
-            var nyan = getNyan();
-            say(channel, "Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
-        }
-        else if (message.startsWith("!n") || message.startsWith("!nyan")) {
-            nyanToBust(channel, message);
-        }
-        else if (message.startsWith("!med") || message.startsWith("!median")) {
-            processByLength(channel, message, median);
-        }
-        else if (message.startsWith("!mean") || message.startsWith("!avg") || message.startsWith("!average")) {
-            processByLength(channel, message, average);
-        }
-        else if (message.startsWith("!mode")) {
-            processByLength(channel, message, mode);
-        }
-        else if (message.startsWith("!min") || message.startsWith("!minimum")) {
-            processByLength(channel, message, min);
-        }
-        else if (message.startsWith("!max") || message.startsWith("!maximum")) {
-            processByLength(channel, message, max);
-        }
-        else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
-            processJoking(channel, message, jokingBust125);
-        }
-        else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
-            processJoking(channel, message, jokingBust4);
-        }
-        else if (message.startsWith("!bst") || message.startsWith("!bust")) {
-            processByBust(channel, message, bust);
-        }
-        else if (message.startsWith("!streak")) {
-            processByBust(channel, message, streak);
-        }
-        else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
-            say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
-        }
+    }
+    catch (err) {
+        console.error(err);
+        say("spam", "Whoops, I can't seem to respond right now!");
     }
 });
 
@@ -924,16 +930,26 @@ function getUserInfo(username) {
         call.send(null);
         var page = call.responseText;
 
-        var usernameIndex = page.indexOf("<b>", page.indexOf("Player:")) + 3;
+        var playerIndex = page.indexOf("Player:");
+        if (playerIndex == -1) {
+            return null;
+        }
+        
+        var usernameIndex = page.indexOf("<b>", playerIndex) + 3;
         username = page.substring(usernameIndex, page.indexOf("</b>", usernameIndex));
 
-        var playIndex = page.indexOf("20", page.indexOf("created"));
-        var play = new Date(page.substring(playIndex, page.indexOf("Z", playIndex) + 1)).getTime();
+        var createdIndex = page.indexOf("created");
+        var play = null;
+        
+        if (createdIndex >= 0) {
+            var playIndex = page.indexOf("20", createdIndex);
+            play = new Date(page.substring(playIndex, page.indexOf("Z", playIndex) + 1)).getTime();
+        }
 
         var player;
         if (_players.hasOwnProperty("_" + username)) {
             _players["_" + username].play = play;
-        	player = _players["_" + username];
+            player = _players["_" + username];
         }
         else {
             player = _players["_" + username] = {
@@ -980,9 +996,9 @@ _snarks.push("F*ck! Even in the future nothing works.");
 _snarks.push("Go home. Feed your dog. Meet your kids.");
 _snarks.push("beep boop");
 _snarks.push("If a robot is programmed to have feelings, are those feelings any less real?");
-function snark() {
+function snark(channel) {
     var index = Math.floor(Math.random() * _snarks.length);
-    say(_snarks[index]);
+    say(channel, _snarks[index]);
 }
 
 var _shibaSnarks = [];
@@ -991,9 +1007,9 @@ _shibaSnarks.push("Shiba who?");
 _shibaSnarks.push("We don't talk about Shiba.");
 _shibaSnarks.push("shiba ded");
 _shibaSnarks.push("A moment of silence for our dear, departed friend, Shiba.");
-function shibaSnark() {
+function shibaSnark(channel) {
     var index = Math.floor(Math.random() * _shibaSnarks.length);
-    say(_shibaSnarks[index]);
+    say(channel, _shibaSnarks[index]);
 }
 
 /*==================================
