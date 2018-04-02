@@ -162,7 +162,7 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
                 processByBust(channel, message, probability);
             }
-            else if (message.startsWith("!s ") || message.startsWith("!seen ")) { /* Checking for space to make sure that this doesn't override !streak. */
+            else if (!message.startsWith("!st") && (message.startsWith("!s") || message.startsWith("!seen"))) { /* Checking for !st to make sure that this doesn't override !streak. */
                 seen(channel, message, data.message);
             }
             else if (!_caughtUp) {
@@ -639,7 +639,8 @@ function bust(below, cashout, streak) {
             if (result) {
                 result += ", ";
             }
-            result += (_game.id - game.id) + " games ago (" + game.bust + "x)";
+            var games = _game.id - game.id;
+            result += games + " game" + (games == 1 ? "" : "s") + " ago (" + game.bust + "x)";
             found++;
             if (found >= streak) {
                 break;
@@ -693,11 +694,13 @@ function streak(below, cashout, streak) {
 
     /* Report back. */
     if (streak && found.length >= streak) {
-        result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
+        var games = _game.id - found[found.length - 1].id;
+        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
         return result;
     }
     else if (!streak) {
-        result = "seen " + found.length + " streak " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
+        var games = _game.id - found[found.length - 1].id;
+        result = "seen " + found.length + " streak " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
         return result;
     }
     else {
@@ -768,7 +771,8 @@ function jokingBust(streak) {
             result += found[ii].bust + "x";
         }
 
-        result = "seen " + (_game.id - found[found.length - 1].id) + " games ago (" + result + ")";
+        var games = _game.id - found[found.length - 1].id;
+        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
         return result;
     }
     else {
@@ -889,11 +893,11 @@ function seen(channel, message, original) {
                 else if (player.play && player.chat) {
                     var play = timeAgo(player.play);
                     var chat = timeAgo(player.chat);
-                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + " ago and in the chat " + (chat ? chat + " ago" : "just now") + " ago.";
+                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + " and in the chat " + (chat ? chat + " ago." : "just now.");
                 }
                 else if (player.play) {
                     var play = timeAgo(player.play);
-                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + " ago, but I can't remember the last time I saw them in the chat.";
+                    info = "I saw @" + player.username + " playing " + (play ? play + " ago" : "just now") + ", but I can't remember the last time I saw them in the chat.";
                 }
                 else {
                     var chat = timeAgo(player.chat);
