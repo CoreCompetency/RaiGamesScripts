@@ -455,7 +455,7 @@ function processJoking(channel, message, action, options) {
     for (var ii = 0; ii < losses.length; ii++) {
         var text = losses[ii];
         response += text + " ";
-        results.push(action(text), options);
+        results.push(action(text, options));
     }
 
     /* Print result. */
