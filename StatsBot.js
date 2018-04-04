@@ -49,10 +49,12 @@
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !bst joking125[ G[ H[ I]]]
       !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            Add "!details" to get the individual busts that make up the series bust.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
     - !bst joking4[ G[ H[ I]]]
       !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
+                                            Add "!details" to get the individual busts that make up the series bust.
+                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !bst [A:B:C:...]x#
       !bust [A:B:C:...]x#                   Returns the last (#) bust(s) for the provided series.
                                             This allows callers to check for custom bust streaks to quickly test strategies.
