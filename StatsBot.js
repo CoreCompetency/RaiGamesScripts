@@ -215,10 +215,10 @@ engine.on("msg", function (data) {
                 say(channel, "core10to2: " + findCustomBust([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2], 1, options));
             }*/
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
-                processJoking(channel, message, jokingBust125);
+                processJoking(channel, message, jokingBust125, options);
             }
             else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
-                processJoking(channel, message, jokingBust4);
+                processJoking(channel, message, jokingBust4, options);
             }
             else if (message.startsWith("!bst") || message.startsWith("!bust")) {
                 processByBust(channel, message, bust, options);
@@ -415,7 +415,7 @@ function processByBust(channel, message, action, options) {
     say(channel, response);
 }
 
-function processJoking(channel, message, action) {
+function processJoking(channel, message, action, options) {
     /* Get the losses that come after the command. */
     var losses = message.split(" ").filter(function (ii) { return ii; });
     losses = losses.slice(2);
@@ -455,7 +455,7 @@ function processJoking(channel, message, action) {
     for (var ii = 0; ii < losses.length; ii++) {
         var text = losses[ii];
         response += text + " ";
-        results.push(action(text));
+        results.push(action(text), options);
     }
 
     /* Print result. */
@@ -752,12 +752,12 @@ function jokingProbability4(losses) {
 var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
 var _streak4 = [1.08, 1.25, 1.31, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33];
 
-function jokingBust125(losses) {
-    return findCustomBust(_streak125.slice(0, losses), 1);
+function jokingBust125(losses, options) {
+    return findCustomBust(_streak125.slice(0, losses), 1, options);
 }
 
-function jokingBust4(losses) {
-    return findCustomBust(_streak4.slice(0, losses), 1);
+function jokingBust4(losses, options) {
+    return findCustomBust(_streak4.slice(0, losses), 1, options);
 }
 
 function customBust(channel, message, options) {
