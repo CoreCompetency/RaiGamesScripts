@@ -214,7 +214,7 @@ engine.on("msg", function (data) {
     }
     catch (err) {
         console.error(err);
-        say("spam", "Whoops, I can't seem to respond right now!");
+        say("spam", "Whoops, I did me a heckin' error!");
     }
 });
 
@@ -229,8 +229,10 @@ function processByLength(channel, message, action) {
 
     /* Check input. */
     if (lengths.length == 0) {
-        /* Default to 100 games. */
+        /* This is probably of the most interest to the most people. */
         lengths.push("100");
+        lengths.push("500");
+        lengths.push("1000");
     }
     else if (lengths.length > 3) {
         say(channel, "Please limit to 3 arguments.");
