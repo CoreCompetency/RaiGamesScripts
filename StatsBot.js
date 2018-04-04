@@ -814,13 +814,17 @@ function customBust(channel, message) {
         var parsed = parseFloat(cashout);
         if (isNaN(parsed)) {
             if (cashout == "n" || cashout == "nyan") {
-                cashout.push(1000);
+                cashouts.push(1000);
             }
             else {
                 say(channel, "Wrong format: " + message);
                 return;
             }
         }
+    	else if (parsed < 1) {
+			say(channel, "Please target cashouts of at least 1: " + message);
+			return;
+		}
         else {
             cashouts.push(cashout);
         }
