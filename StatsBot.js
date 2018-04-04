@@ -56,12 +56,15 @@
     - !bst [A:B:C:...]x#
       !bust [A:B:C:...]x#                   Returns the last (#) bust(s) for the provided series.
                                             This allows callers to check for custom bust streaks to quickly test strategies.
+                                            Add "!details" to get the individual busts that make up the series bust.
     - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
+                                            Add "!details" to get the individual busts that make up the streak.
     - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
+                                            Add "!details" to get the individual busts that make up the streak.
     - !n
       !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
     - !n#
@@ -118,6 +121,13 @@ engine.on("msg", function (data) {
             var message = data.message.toLowerCase()
                                       .replace(_regex.charFilter, "");
 
+            var options = { details: false };
+            var index = message.indexOf("!details");
+            if (index > -1) {
+                options.details = true;
+                message = message.replace("!details", "");
+            }
+
             if (data.username == _scriptUsername) {
                 if (message == "!stop") {
                     cacheResults();
@@ -163,7 +173,7 @@ engine.on("msg", function (data) {
                 processJoking(channel, message, jokingProbability4);
             }
             else if (message.startsWith("!prb") || message.startsWith("!prob") || message.startsWith("!probability")) {
-                processByBust(channel, message, probability);
+                processByBust(channel, message, probability, options);
             }
             else if (!message.startsWith("!st") && (message.startsWith("!s") || message.startsWith("!seen"))) { /* Checking for !st to make sure that this doesn't override !streak. */
                 seen(channel, message, data.message);
@@ -181,7 +191,7 @@ engine.on("msg", function (data) {
                 say(channel, "Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
             }
             else if (message.startsWith("!n") || message.startsWith("!nyan")) {
-                nyanToBust(channel, message);
+                nyanToBust(channel, message, options);
             }
             else if (message.startsWith("!med") || message.startsWith("!median")) {
                 processByLength(channel, message, median);
@@ -199,10 +209,10 @@ engine.on("msg", function (data) {
                 processByLength(channel, message, max);
             }
             else if ((message.startsWith("!bst") || message.startsWith("!bust")) && message.indexOf("[") > -1) {
-                customBust(channel, message);
+                customBust(channel, message, options);
             }
             /*else if (message == "!bst core10to2" || message == "!bust core10to2") {
-                say(channel, "core10to2: " + findCustomBust([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2], 1));
+                say(channel, "core10to2: " + findCustomBust([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2], 1, options));
             }*/
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
                 processJoking(channel, message, jokingBust125);
@@ -211,10 +221,10 @@ engine.on("msg", function (data) {
                 processJoking(channel, message, jokingBust4);
             }
             else if (message.startsWith("!bst") || message.startsWith("!bust")) {
-                processByBust(channel, message, bust);
+                processByBust(channel, message, bust, options);
             }
             else if (message.startsWith("!streak")) {
-                processByBust(channel, message, streak);
+                processByBust(channel, message, streak, options);
             }
             else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
                 say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
@@ -321,7 +331,7 @@ function processByLength(channel, message, action) {
     say(channel, response);
 }
 
-function processByBust(channel, message, action) {
+function processByBust(channel, message, action, options) {
     /* Get the cashouts that come after the command. */
     var cashouts = message.match(_regex.bustArgs);
     cashouts = cashouts.slice(1);
@@ -393,7 +403,7 @@ function processByBust(channel, message, action) {
             below = true;
             cashout = 1;
         }
-        results.push(action(below, cashout, streak)); /* Let the action interpret the streak. */
+        results.push(action(below, cashout, streak, options)); /* Let the action interpret the streak. */
     }
 
     /* Print result. */
@@ -490,7 +500,7 @@ function getNyanMessage() {
     return message;
 }
 
-function nyanToBust(channel, message) {
+function nyanToBust(channel, message, options) {
     var index = message.indexOf("nyan") > -1 ? 5 : 2;
     var arg = message.substring(index).trim();
     if (arg.indexOf(" ") > -1) {
@@ -504,7 +514,7 @@ function nyanToBust(channel, message) {
             say(channel, "Wrong format: " + arg);
         }
         else {
-            processByBust(channel, "!bust nyanx" + arg, bust);
+            processByBust(channel, "!bust nyanx" + arg, bust, options);
         }
     }
 }
@@ -620,7 +630,7 @@ function max(start, length) {
     }
 }
 
-function probability(below, cashout, streak) {
+function probability(below, cashout, streak, options) {
     var p = prob(cashout);
 
     /* Check for inversion. */
@@ -636,7 +646,7 @@ function probability(below, cashout, streak) {
     return "~" + round(p, 3) + "%";
 }
 
-function bust(below, cashout, streak) {
+function bust(below, cashout, streak, options) {
     streak = streak || 1;
     if (streak > 35) {
         streak = 35; /* Won't be able to print this many anyway. */
@@ -652,6 +662,7 @@ function bust(below, cashout, streak) {
             }
             var games = _game.id - game.id;
             result += games + " game" + (games == 1 ? "" : "s") + " ago (" + game.bust + "x)";
+            
             found++;
             if (found >= streak) {
                 break;
@@ -664,7 +675,7 @@ function bust(below, cashout, streak) {
     return result;
 }
 
-function streak(below, cashout, streak) {
+function streak(below, cashout, streak, options) {
     var found = [];
     var check = [];
     for (var ii = 0; ii < _games.length; ii++) {
@@ -696,7 +707,7 @@ function streak(below, cashout, streak) {
     /* List all the games. */
     var print = (found.length > 120 ? 120 : found.length); /* Won't be able to print this many anyway. */
     var result = "";
-    for (var ii = 0; ii < found.length; ii++) {
+    for (var ii = 0; ii < print; ii++) {
         if (result) {
             result += ", ";
         }
@@ -706,12 +717,12 @@ function streak(below, cashout, streak) {
     /* Report back. */
     if (streak && found.length >= streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
+        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else if (!streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + found.length + " streak " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
+        result = "seen " + found.length + " streak " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else {
@@ -749,7 +760,7 @@ function jokingBust4(losses) {
     return findCustomBust(_streak4.slice(0, losses), 1);
 }
 
-function customBust(channel, message) {
+function customBust(channel, message, options) {
     var index = message.startsWith("!bust") ? 5 : 4;
     message = message.substring(index).trim();
 
@@ -792,13 +803,13 @@ function customBust(channel, message) {
     }
     
     /* Process request. */
-    var response = message + ": " + findCustomBust(cashouts, sets);
+    var response = message + ": " + findCustomBust(cashouts, sets, options);
 
     /* Print result. */
     say(channel, response);
 }
 
-function findCustomBust(cashouts, sets) {
+function findCustomBust(cashouts, sets, options) {
     /* The order in which we'll come across the games. */
     cashouts.reverse();
     
@@ -836,7 +847,7 @@ function findCustomBust(cashouts, sets) {
             }
 
             var games = _game.id - found[found.length - 1].id;
-            response += "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + "), ";
+            response += "seen " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + "), " : ", ");
         }
         else {
             response += "never seen, ";
