@@ -53,6 +53,9 @@
     - !bst joking4[ G[ H[ I]]]
       !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
+    - !bst [A:B:C:...]x#
+      !bust [A:B:C:...]x#                   Returns the last (#) bust(s) for the provided series.
+                                            This allows callers to check for custom bust streaks to quickly test strategies.
     - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
     - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
@@ -195,6 +198,9 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!max") || message.startsWith("!maximum")) {
                 processByLength(channel, message, max);
             }
+            else if ((message.startsWith("!bst") || message.startsWith("!bust")) && message.indexOf("[") > -1) {
+                customBust(channel, message);
+            }
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
                 processJoking(channel, message, jokingBust125);
             }
@@ -214,7 +220,7 @@ engine.on("msg", function (data) {
     }
     catch (err) {
         console.error(err);
-        say("spam", "Whoops, I can't seem to respond right now!");
+        say("spam", "Oops, I did me a heckin' error!");
     }
 });
 
@@ -229,8 +235,10 @@ function processByLength(channel, message, action) {
 
     /* Check input. */
     if (lengths.length == 0) {
-        /* Default to 100 games. */
+        /* This is probably of the most interest to the most people. */
         lengths.push("100");
+        lengths.push("500");
+        lengths.push("1000");
     }
     else if (lengths.length > 3) {
         say(channel, "Please limit to 3 arguments.");
@@ -302,7 +310,7 @@ function processByLength(channel, message, action) {
     }
 
     /* Print result. */
-    var response = response.trim() + ":";
+    response = response.trim() + ":";
     for (var ii = 0; ii < results.length; ii++) {
         response += " " + results[ii] + "; ";
     }
@@ -386,7 +394,7 @@ function processByBust(channel, message, action) {
     }
 
     /* Print result. */
-    var response = response.trim() + ":";
+    response = response.trim() + ":";
     for (var ii = 0; ii < results.length; ii++) {
         response += " " + results[ii] + "; ";
     }
@@ -438,7 +446,7 @@ function processJoking(channel, message, action) {
     }
 
     /* Print result. */
-    var response = response.trim() + ":";
+    response = response.trim() + ":";
     for (var ii = 0; ii < results.length; ii++) {
         response += " " + results[ii] + "; ";
     }
@@ -780,6 +788,95 @@ function jokingBust(streak) {
     }
 }
 
+function customBust(channel, message) {
+    var index = message.startsWith("!bust") ? 5 : 4;
+    message = message.substring(index).trim();
+
+    /* Get the series. */
+    var match = _regex.customBust.exec(message);
+    if (!match) {
+        say(channel, "Wrong format: " + message);
+        return;
+    }
+    var series = match.groups["series"];
+    var sets = parseInt(match.groups["sets"]);
+    if (sets != null && (sets < 1 || sets > 5)) {
+        say(channel, "Please target between 1 and 5 sets: " + message);
+        return;
+    }
+    sets = sets || 1; /* Default to 1 if sets is not specified. */
+    
+    /* Get the cashouts. */
+    var cashouts = [];
+    var values = series.split(":");
+    for (var ii = 0; ii < values.length; ii++) {
+        var cashout = values[ii];
+        var parsed = parseFloat(cashout);
+        if (isNaN(parsed)) {
+            if (cashout == "n" || cashout == "nyan") {
+                cashout.push(1000);
+            }
+            else {
+                say(channel, "Wrong format: " + message);
+                return;
+            }
+        }
+        else {
+            cashouts.push(cashout);
+        }
+    }
+    
+    /* The order in which we'll come across the games. */
+    cashouts.reverse();
+    
+    /* Process request. */
+    var response = message + ": ";
+    var game = 0;
+    for (var ii = 0; ii < sets; ii++) {
+        var found = [];
+        for (; game < _games.length; game++) {
+            var entry = _games[game];
+            if (entry.bust < cashouts[found.length]) {
+                found.push(entry);
+                if (found.length >= cashouts.length) {
+                    break;
+                }
+            }
+            else {
+                /* Back it up and start again. */
+                game = game - found.length;
+                found = [];
+            }
+        }
+
+        /* Report back. */
+        if (found.length >= cashouts.length) {
+            /* Start from the first game. */
+            found.reverse();
+
+            /* List all the games. */
+            var result = "";
+            for (var jj = 0; jj < found.length; jj++) {
+                if (result) {
+                    result += ", ";
+                }
+                result += found[jj].bust + "x";
+            }
+
+            var games = _game.id - found[found.length - 1].id;
+            response += "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + "), ";
+        }
+        else {
+            response += "never seen, ";
+            break;
+        }
+    }
+    response = response.substring(0, response.length - 2); /* Trim final comma. */
+
+    /* Print result. */
+    say(channel, response);
+}
+
 /*==================================
  Regex.
 ===================================*/
@@ -795,7 +892,9 @@ var _regex = {
     length: /^(?<length>[0-9]+|all)?(?:x(?<sets>[0-9]+))?$/,
     bust: /^(?<below><(?: *)?)?(?<bust>[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:x(?<streak>[0-9]+))?$/,
 
-    username: /^[A-Za-z0-9_\-]{3,16}$/
+    username: /^[A-Za-z0-9_\-]{3,16}$/,
+    
+    customBust: /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?))*) *\](?:x(?<sets>[0-9]+))?$/
 };
 
 /*==================================
