@@ -213,9 +213,6 @@ engine.on("msg", function (data) {
             else if ((message.startsWith("!bst") || message.startsWith("!bust")) && message.indexOf("[") > -1) {
                 customBust(channel, message, options);
             }
-            /*else if (message == "!bst core10to2" || message == "!bust core10to2") {
-                say(channel, "core10to2: " + findCustomBust([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2], 1, options));
-            }*/
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
                 processJoking(channel, message, jokingBust125, options);
             }
