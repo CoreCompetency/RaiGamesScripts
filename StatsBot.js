@@ -201,6 +201,9 @@ engine.on("msg", function (data) {
             else if ((message.startsWith("!bst") || message.startsWith("!bust")) && message.indexOf("[") > -1) {
                 customBust(channel, message);
             }
+            /*else if (message == "!bst core10to2" || message == "!bust core10to2") {
+                say(channel, "core10to2: " + findCustomBust([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9, 9, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 2, 2], 1));
+            }*/
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
                 processJoking(channel, message, jokingBust125);
             }
@@ -739,53 +742,11 @@ var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
 var _streak4 = [1.08, 1.25, 1.31, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33];
 
 function jokingBust125(losses) {
-    return jokingBust(_streak125.slice(0, losses));
+    return findCustomBust(_streak125.slice(0, losses), 1);
 }
 
 function jokingBust4(losses) {
-    return jokingBust(_streak4.slice(0, losses));
-}
-
-function jokingBust(streak) {
-    streak.reverse(); /* The order in which we'll come across the games. */
-
-    var found = [];
-    for (var ii = 0; ii < _games.length; ii++) {
-        var game = _games[ii];
-        if (game.bust < streak[found.length]) {
-            found.push(game);
-            if (found.length >= streak.length) {
-                break;
-            }
-        }
-        else {
-            /* Back it up and start again. */
-            ii = ii - found.length;
-            found = [];
-        }
-    }
-
-    /* Report back. */
-    if (found.length >= streak.length) {
-        /* Start from the first game. */
-        found.reverse();
-
-        /* List all the games. */
-        var result = "";
-        for (var ii = 0; ii < found.length; ii++) {
-            if (result) {
-                result += ", ";
-            }
-            result += found[ii].bust + "x";
-        }
-
-        var games = _game.id - found[found.length - 1].id;
-        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago (" + result + ")";
-        return result;
-    }
-    else {
-        return "never seen";
-    }
+    return findCustomBust(_streak4.slice(0, losses), 1);
 }
 
 function customBust(channel, message) {
@@ -814,23 +775,34 @@ function customBust(channel, message) {
         var parsed = parseFloat(cashout);
         if (isNaN(parsed)) {
             if (cashout == "n" || cashout == "nyan") {
-                cashout.push(1000);
+                cashouts.push(1000);
             }
             else {
                 say(channel, "Wrong format: " + message);
                 return;
             }
         }
+        else if (parsed < 1) {
+            say(channel, "Please target cashouts of at least 1: " + message);
+            return;
+        }
         else {
-            cashouts.push(cashout);
+            cashouts.push(parsed);
         }
     }
     
+    /* Process request. */
+    var response = message + ": " + findCustomBust(cashouts, sets);
+
+    /* Print result. */
+    say(channel, response);
+}
+
+function findCustomBust(cashouts, sets) {
     /* The order in which we'll come across the games. */
     cashouts.reverse();
     
-    /* Process request. */
-    var response = message + ": ";
+    var response = "";
     var game = 0;
     for (var ii = 0; ii < sets; ii++) {
         var found = [];
@@ -872,9 +844,7 @@ function customBust(channel, message) {
         }
     }
     response = response.substring(0, response.length - 2); /* Trim final comma. */
-
-    /* Print result. */
-    say(channel, response);
+    return response;
 }
 
 /*==================================
