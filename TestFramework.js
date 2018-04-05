@@ -165,4 +165,10 @@ if (test.enabled) {
             }
         }
     }
+	
+    /*==================================
+     User alert.
+    ===================================*/
+
+    console.log("Testing with a balance of " + scale(engine.getBalance()));
 }
