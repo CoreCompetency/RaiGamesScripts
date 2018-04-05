@@ -55,12 +55,10 @@ if (test.enabled) {
     engine.on("game_starting", function(data) {
         testFramework.game = data.game_id;
         testFramework.result = result.notPlayed;
-        run("game_starting", data);
     });
 
     engine.on("game_started", function(data) {
         testFramework.running = true;
-        run("game_started", data);
     });
 
     engine.placeBet = function(bet, cashout) {
@@ -85,7 +83,6 @@ if (test.enabled) {
             }
             testFramework.current = null;
         }
-        run("game_crash", data);
     });
 
     var error = {
