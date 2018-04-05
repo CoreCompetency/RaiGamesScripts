@@ -1,5 +1,5 @@
 /* Do not change. */
-var balance = { real: "REAL", example: "EXAMPLE" };
+var testBalance = { real: "REAL", example: "EXAMPLE" };
 
 /*==================================
 This script will turn any gambling script into a test script; just put it at the top
@@ -8,8 +8,8 @@ of the script you'd like to test and it will take care of the rest.
 Once you've tested the script, you can either remove this script from the top or set
 testSettings.enabled to false in the settings below.
 
-There are two modes available for testing:  balance.example will test with a starting
-balance of 10 nano, and balance.real will test with your current balance.
+There are two modes available for testing:  testBalance.example will test with a
+starting balance of 10 nano, and testBalance.real will test with your current balance.
 
 Since there won't be any bonuses awarded to your test bets, be aware that the results
 of the test will run a bit conservative.
@@ -21,7 +21,7 @@ of the test will run a bit conservative.
 
 var testSettings = {
     enabled: true,
-    mode: balance.example
+    mode: testBalance.example
 };
 
 /*====================================================================================
@@ -32,7 +32,7 @@ if (testSettings.enabled) {
     var result = { notPlayed: "NOT_PLAYED", won: "WON", lost: "LOST" };
 
     var testFramework = {
-        balance: testSettings.mode == balance.real ? scale(engine.getBalance()) : 10000,
+        balance: testSettings.mode == testBalance.real ? testHelper.scale(engine.getBalance()) : 10000,
         result: result.notPlayed,
         delay: {
             "game_crash": []
@@ -96,7 +96,7 @@ if (testSettings.enabled) {
         }
         else if (testFramework.running == true) {
             if (testFramework.current) {
-                testHelper.add(testFramework.current.bet * scale(engine.getCurrentPayout()));
+                testHelper.add(testFramework.current.bet * testHelper.scale(engine.getCurrentPayout()));
                 testFramework.current = null;
                 testFramework.result = result.won;
             }
