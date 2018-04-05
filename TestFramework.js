@@ -6,7 +6,7 @@ This script will turn any gambling script into a test script; just put it at the
 of the script you'd like to test and it will take care of the rest.
 
 Once you've tested the script, you can either remove this script from the top or set
-test.enabled to false in the settings below.
+testSettings.enabled to false in the settings below.
 
 There are two modes available for testing:  balance.example will test with a starting
 balance of 10 nano, and balance.real will test with your current balance.
@@ -19,7 +19,7 @@ of the test will run a bit conservative.
  Settings.
 ===================================*/
 
-var test = {
+var testSettings = {
     enabled: true,
     mode: balance.example
 };
@@ -28,11 +28,11 @@ var test = {
  The actual script.  Do not change unless you know what you're doing.
 ======================================================================================*/
 
-if (test.enabled) {
+if (testSettings.enabled) {
     var result = { notPlayed: "NOT_PLAYED", won: "WON", lost: "LOST" };
 
     var testFramework = {
-        balance: test.mode == balance.real ? scale(engine.getBalance()) : 10000,
+        balance: testSettings.mode == balance.real ? scale(engine.getBalance()) : 10000,
         result: result.notPlayed,
         delay: {
             "game_crash": []
@@ -48,7 +48,7 @@ if (test.enabled) {
         engine._bind(event, function(data) {
             /* Make sure to run any delayed functions after the test framework runs its function. */
             func(data);
-            run(event, data);
+            testHelper.run(event, data);
         });
     };
 
@@ -63,49 +63,49 @@ if (test.enabled) {
 
     engine.placeBet = function(bet, cashout) {
         testFramework.current = {
-            bet: scale(bet),
-            cashout: scale(cashout)
+            bet: testHelper.scale(bet),
+            cashout: testHelper.scale(cashout)
         };
-        subtract(testFramework.current.bet);
+        testHelper.subtract(testFramework.current.bet);
         testFramework.lastGamePlayed = testFramework.game;
     }
 
     engine.on("game_crash", function(data) {
         testFramework.running = false;
         if (testFramework.current) {
-            var bust = scale(data.game_crash);
+            var bust = testHelper.scale(data.game_crash);
             if (bust < testFramework.current.cashout) {
                 testFramework.result = result.lost;
             }
             else {
-                add(testFramework.current.bet * testFramework.current.cashout);
+                testHelper.add(testFramework.current.bet * testFramework.current.cashout);
                 testFramework.result = result.won;
             }
             testFramework.current = null;
         }
     });
 
-    var error = {
-        notPlaying: "Cashing out error:  NO_BET_PLACED",
+    testFramework.errors = {
         noGame:     "Cashing out error:  GAME_NOT_IN_PROGRESS",
+        notPlaying: "Cashing out error:  NO_BET_PLACED",
         unknown:    "Cashing out error:  UNKNOWN_STATE"
     };
     engine.cashOut = function(callback) { /* The callback function doesn't seem to ever be called, so just ignoring it. */
         if (testFramework.running == false) {
-            console.warn(error.noGame);
+            console.warn(testFramework.errors.noGame);
         }
         else if (testFramework.running == true) {
             if (testFramework.current) {
-                add(testFramework.current.bet * scale(engine.getCurrentPayout()));
+                testHelper.add(testFramework.current.bet * scale(engine.getCurrentPayout()));
                 testFramework.current = null;
                 testFramework.result = result.won;
             }
             else {
-                console.warn(error.notPlaying);
+                console.warn(testFramework.errors.notPlaying);
             }
         }
         else {
-            console.warn(error.unknown);
+            console.warn(testFramework.errors.unknown);
         }
     }
 
@@ -123,7 +123,7 @@ if (test.enabled) {
     ===================================*/
 
     engine.getBalance = function() {
-        return round(testFramework.balance * 100, true);
+        return testHelper.round(testFramework.balance * 100, true);
     }
 
     engine.lastGamePlay = function() {
@@ -138,37 +138,35 @@ if (test.enabled) {
      Helper functions.
     ===================================*/
 
-    function add(value) {
-        testFramework.balance = round(testFramework.balance + value);
-    }
-
-    function subtract(value) {
-        add(-value);
-    }
-
-    function scale(value) {
-        return round(value / 100.0);
-    }
-
-    function round(value, whole) {
-        if (whole) {
-            return Math.round(value);
-        }
-        return Math.round(value * 100.0) / 100.0;
-    }
-
-    function run(event, data) {
-        if (testFramework.delay.hasOwnProperty(event)) {
-            var events = testFramework.delay[event];
-            for (var ii = 0; ii < events.length; ii++) {
-                events[ii](data);
+    var testHelper = {
+        add: function(value) {
+            testFramework.balance = this.round(testFramework.balance + value);
+        },
+        subtract: function(value) {
+            this.add(-value);
+        },
+        scale: function(value) {
+            return this.round(value / 100.0);
+        },
+        round: function(value, whole) {
+            if (whole) {
+                return Math.round(value);
+            }
+            return Math.round(value * 100.0) / 100.0;
+        },
+        run: function(event, data) {
+            if (testFramework.delay.hasOwnProperty(event)) {
+                var events = testFramework.delay[event];
+                for (var ii = 0; ii < events.length; ii++) {
+                    events[ii](data);
+                }
             }
         }
-    }
-	
+    };
+
     /*==================================
      User alert.
     ===================================*/
 
-    console.log("Testing with a balance of " + scale(engine.getBalance()));
+    console.log("Testing with a balance of " + testHelper.scale(engine.getBalance()));
 }
