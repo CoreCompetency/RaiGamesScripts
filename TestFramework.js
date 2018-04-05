@@ -2,7 +2,7 @@
 var balance = { real: "REAL", example: "EXAMPLE" };
 
 /*==================================
-This script will turn any gambling script into a test script; just put this at the top
+This script will turn any gambling script into a test script; just put it at the top
 of the script you'd like to test and it will take care of the rest.
 
 Once you've tested the script, you can either remove this script from the top or set
