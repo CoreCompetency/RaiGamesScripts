@@ -31,7 +31,7 @@ var testSettings = {
 if (testSettings.enabled) {
     var result = { notPlayed: "NOT_PLAYED", won: "WON", lost: "LOST" };
 
-    var testFramework = {
+    var testTracking = {
         balance: testSettings.mode == testBalance.real ? testHelper.scale(engine.getBalance()) : 10000,
         result: result.notPlayed,
         delay: {
@@ -53,65 +53,65 @@ if (testSettings.enabled) {
     };
 
     engine.on("game_starting", function(data) {
-        testFramework.game = data.game_id;
-        testFramework.result = result.notPlayed;
+        testTracking.game = data.game_id;
+        testTracking.result = result.notPlayed;
     });
 
     engine.on("game_started", function(data) {
-        testFramework.running = true;
+        testTracking.running = true;
     });
 
     engine.placeBet = function(bet, cashout) {
-        testFramework.current = {
+        testTracking.current = {
             bet: testHelper.scale(bet),
             cashout: testHelper.scale(cashout)
         };
-        testHelper.subtract(testFramework.current.bet);
-        testFramework.lastGamePlayed = testFramework.game;
+        testHelper.subtract(testTracking.current.bet);
+        testTracking.lastGamePlayed = testTracking.game;
     }
 
     engine.on("game_crash", function(data) {
-        testFramework.running = false;
-        if (testFramework.current) {
+        testTracking.running = false;
+        if (testTracking.current) {
             var bust = testHelper.scale(data.game_crash);
-            if (bust < testFramework.current.cashout) {
-                testFramework.result = result.lost;
+            if (bust < testTracking.current.cashout) {
+                testTracking.result = result.lost;
             }
             else {
-                testHelper.add(testFramework.current.bet * testFramework.current.cashout);
-                testFramework.result = result.won;
+                testHelper.add(testTracking.current.bet * testTracking.current.cashout);
+                testTracking.result = result.won;
             }
-            testFramework.current = null;
+            testTracking.current = null;
         }
     });
 
-    testFramework.errors = {
+    testTracking.errors = {
         noGame:     "Cashing out error:  GAME_NOT_IN_PROGRESS",
         notPlaying: "Cashing out error:  NO_BET_PLACED",
         unknown:    "Cashing out error:  UNKNOWN_STATE"
     };
     engine.cashOut = function(callback) { /* The callback function doesn't seem to ever be called, so just ignoring it. */
-        if (testFramework.running == false) {
-            console.warn(testFramework.errors.noGame);
+        if (testTracking.running == false) {
+            console.warn(testTracking.errors.noGame);
         }
-        else if (testFramework.running == true) {
-            if (testFramework.current) {
-                testHelper.add(testFramework.current.bet * testHelper.scale(engine.getCurrentPayout()));
-                testFramework.current = null;
-                testFramework.result = result.won;
+        else if (testTracking.running == true) {
+            if (testTracking.current) {
+                testHelper.add(testTracking.current.bet * testHelper.scale(engine.getCurrentPayout()));
+                testTracking.current = null;
+                testTracking.result = result.won;
             }
             else {
-                console.warn(testFramework.errors.notPlaying);
+                console.warn(testTracking.errors.notPlaying);
             }
         }
         else {
-            console.warn(testFramework.errors.unknown);
+            console.warn(testTracking.errors.unknown);
         }
     }
 
     engine.on = function(event, func) {
-        if (testFramework.delay.hasOwnProperty(event)) {
-            testFramework.delay[event].push(func);
+        if (testTracking.delay.hasOwnProperty(event)) {
+            testTracking.delay[event].push(func);
         }
         else {
             engine._bind(event, func);
@@ -123,15 +123,15 @@ if (testSettings.enabled) {
     ===================================*/
 
     engine.getBalance = function() {
-        return testHelper.round(testFramework.balance * 100, true);
+        return testHelper.round(testTracking.balance * 100, true);
     }
 
     engine.lastGamePlay = function() {
-        return testFramework.result;
+        return testTracking.result;
     }
 
     engine.lastGamePlayed = function() {
-        return testFramework.lastGamePlayed && testFramework.lastGamePlayed == (testFramework.game - 1);
+        return testTracking.lastGamePlayed && testTracking.lastGamePlayed == (testTracking.game - 1);
     }
 
     /*==================================
@@ -140,7 +140,7 @@ if (testSettings.enabled) {
 
     var testHelper = {
         add: function(value) {
-            testFramework.balance = this.round(testFramework.balance + value);
+            testTracking.balance = this.round(testTracking.balance + value);
         },
         subtract: function(value) {
             this.add(-value);
@@ -155,8 +155,8 @@ if (testSettings.enabled) {
             return Math.round(value * 100.0) / 100.0;
         },
         run: function(event, data) {
-            if (testFramework.delay.hasOwnProperty(event)) {
-                var events = testFramework.delay[event];
+            if (testTracking.delay.hasOwnProperty(event)) {
+                var events = testTracking.delay[event];
                 for (var ii = 0; ii < events.length; ii++) {
                     events[ii](data);
                 }
