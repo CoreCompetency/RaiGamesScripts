@@ -270,8 +270,8 @@ function processByLength(channel, message, action) {
         lengths.push("500");
         lengths.push("1000");
     }
-    else if (lengths.length > 3) {
-        say(channel, "Please limit to 3 arguments.");
+    else if (lengths.length > 4) {
+        say(channel, "Please limit to 4 arguments.");
         return;
     }
 
@@ -358,10 +358,11 @@ function processByBust(channel, message, action, options) {
         /* This is probably of the most interest to the most people. */
         cashouts.push("2");
         cashouts.push("0");
+		cashouts.push("100");
         cashouts.push("nyan");
     }
-    else if (cashouts.length > 3) {
-        say(channel, "Please limit to 3 arguments.");
+    else if (cashouts.length > 4) {
+        say(channel, "Please limit to 4 arguments.");
         return;
     }
 
@@ -444,8 +445,8 @@ function processJoking(channel, message, action, options) {
         /* Default to 5. */
         losses.push("5");
     }
-    else if (losses.length > 3) {
-        say(channel, "Please limit to three arguments in one request.");
+    else if (losses.length > 4) {
+        say(channel, "Please limit to 4 arguments.");
         return;
     }
 
