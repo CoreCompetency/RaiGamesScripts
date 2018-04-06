@@ -129,6 +129,16 @@ engine.on("msg", function (data) {
                 options.details = true;
                 message = message.replace("!details", "");
             }
+            index = message.indexOf("!detail");
+            if (index > -1) {
+                options.details = true;
+                message = message.replace("!detail", "");
+            }
+            index = message.indexOf("!dtl");
+            if (index > -1) {
+                options.details = true;
+                message = message.replace("!dtl", "");
+            }
 
             if (data.username == _scriptUsername) {
                 if (message == "!stop") {
@@ -160,6 +170,7 @@ engine.on("msg", function (data) {
             else if (message == "!script" || message == "!scripts") {
                 say(channel, "Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
                 say(channel, "If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
+                say(channel, "You can also use this test framework to test any other script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/TestFramework.js");
                 say(channel, "Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
             }
             else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
@@ -221,6 +232,9 @@ engine.on("msg", function (data) {
             }
             else if (message.startsWith("!bst") || message.startsWith("!bust")) {
                 processByBust(channel, message, bust, options);
+            }
+            else if (message.startsWith("!gap")) {
+                processByBust(channel, message, gap, options);
             }
             else if (message.startsWith("!streak")) {
                 processByBust(channel, message, streak, options);
@@ -289,8 +303,8 @@ function processByLength(channel, message, action) {
             }
             else {
                 var sets = parseInt(match.groups["sets"]);
-                if (sets != null && (sets < 1 || sets > 5)) {
-                    say(channel, "Please target between 1 and 5 sets: " + text);
+                if (sets != null && sets < 1) {
+                    say(channel, "Please target at least 1 set: " + text);
                     return;
                 }
             }
@@ -661,7 +675,7 @@ function bust(below, cashout, streak, options) {
             }
             var games = _game.id - game.id;
             result += games + " game" + (games == 1 ? "" : "s") + " ago (" + game.bust + "x)";
-            
+
             found++;
             if (found >= streak) {
                 break;
@@ -729,6 +743,42 @@ function streak(below, cashout, streak, options) {
     }
 }
 
+function gap(below, cashout, streak, options) {
+    streak = streak || 1;
+    if (streak > 35) {
+        streak = 35; /* Won't be able to print this many anyway. */
+    }
+
+    var result = "";
+    var found = 0;
+    var current;
+    for (var ii = 0; ii < _games.length; ii++) {
+        var game = _games[ii];
+        if (game.bust >= cashout) {
+            if (!current) {
+				var games = _game.id - game.id;
+                result += games + " game" + (games == 1 ? "" : "s") + " (current)";
+                current = game;
+            }
+            else {
+				result += ", ";
+                var games = current.id - game.id;
+                result += games + " game" + (games == 1 ? "" : "s");
+                current = game;
+            }
+
+            found++;
+            if (found >= streak) {
+                break;
+            }
+        }
+    }
+    if (!result) {
+        result = "never seen";
+    }
+    return result;
+}
+
 function jokingProbability125(losses) {
     var p108 = (100 - prob(1.08)) / 100.0;
     var p125 = (100 - prob(1.25)) / 100.0;
@@ -771,12 +821,12 @@ function customBust(channel, message, options) {
     }
     var series = match.groups["series"];
     var sets = parseInt(match.groups["sets"]);
-    if (sets != null && (sets < 1 || sets > 5)) {
-        say(channel, "Please target between 1 and 5 sets: " + message);
+    if (sets != null && sets < 1) {
+        say(channel, "Please target at least 1 set: " + message);
         return;
     }
     sets = sets || 1; /* Default to 1 if sets is not specified. */
-    
+
     /* Get the cashouts. */
     var cashouts = [];
     var values = series.split(":");
@@ -800,7 +850,7 @@ function customBust(channel, message, options) {
             cashouts.push(parsed);
         }
     }
-    
+
     /* Process request. */
     var response = message + ": " + findCustomBust(cashouts, sets, options);
 
@@ -811,7 +861,7 @@ function customBust(channel, message, options) {
 function findCustomBust(cashouts, sets, options) {
     /* The order in which we'll come across the games. */
     cashouts.reverse();
-    
+
     var response = "";
     var game = 0;
     for (var ii = 0; ii < sets; ii++) {
@@ -873,8 +923,8 @@ var _regex = {
     bust: /^(?<below><(?: *)?)?(?<bust>[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:x(?<streak>[0-9]+))?$/,
 
     username: /^[A-Za-z0-9_\-]{3,16}$/,
-    
-    customBust: /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?))*) *\](?:x(?<sets>[0-9]+))?$/
+
+    customBust: /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?))*) *\](?: *x *(?<sets>[0-9]+))? *$/
 };
 
 /*==================================
@@ -1017,13 +1067,13 @@ function getUserInfo(username) {
         if (playerIndex == -1) {
             return null;
         }
-        
+
         var usernameIndex = page.indexOf("<b>", playerIndex) + 3;
         username = page.substring(usernameIndex, page.indexOf("</b>", usernameIndex));
 
         var createdIndex = page.indexOf("created");
         var play = null;
-        
+
         if (createdIndex >= 0) {
             var playIndex = page.indexOf("20", createdIndex);
             play = new Date(page.substring(playIndex, page.indexOf("Z", playIndex) + 1)).getTime();
