@@ -3,34 +3,34 @@
    The following commands can be called by anyone:
     - !med[ A[ B[ C]]]
       !median[ A[ B[ C]]]:                  Returns the median(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
                                             For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
     - !mean[ A[ B[ C]]]
       !avg[ A[ B[ C]]]
       !average[ A[ B[ C]]]:                 Returns the average(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
                                             For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
     - !min[ A[ B[ C]]]
       !minimum[ A[ B[ C]]]:                 Returns the lowest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
                                             For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
     - !max[ A[ B[ C]]]
       !maximum[ A[ B[ C]]]:                 Returns the highest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 each.
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
                                             For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
     - !mode[ A[ B[ C]]]:                    Returns the mode(s) of the last A[, B[, and C]] games(, separated by |), or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back, max 5 (each).
+                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
                                             For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
                                             A, B, or C can also be the word "all" to specify all games.
     - !prb[ D[ E[ F]]]
       !prob[ D[ E[ F]]]
       !probability[ D[ E[ F]]]:             Returns the probability(ies) of the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears, max 20 (each).
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears.
                                             For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !prb joking125[ G[ H[ I]]]
@@ -44,7 +44,7 @@
     - !bst[ D[ E[ F]]]
       !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of busts to return, max 20 (each).
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of busts to return.
                                             For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !bst joking125[ G[ H[ I]]]
@@ -56,17 +56,21 @@
                                             Add "!details" to get the individual busts that make up the series bust.
                                             The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !bst [A:B:C:...]x#
-      !bust [A:B:C:...]x#                   Returns the last (#) bust(s) for the provided series.
+      !bust [A:B:C:...]x#:                  Returns the last (#) bust(s) for the provided series.
                                             This allows callers to check for custom bust streaks to quickly test strategies.
                                             Add "!details" to get the individual busts that make up the series bust.
     - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             Add "!details" to get the individual busts that make up the streak.
-    - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # (max 20 each) seen for the given bust(s).
+    - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # seen for the given bust(s).
                                             < and > can precede the bust value to indicate above (or equal to) or below the bust value.
                                             For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
                                             Add "!details" to get the individual busts that make up the streak.
+    - !gap [ D[ E[ F]]]                     Returns the gaps between since the last bust(s) including provided value(s), or a bust value of 2 if no arguments are provided.
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of gaps to return.
+                                            For example, "!gap 100x6" will return the last six gaps of games under 100x.  "!gap 1.25" will return the current number of games since the last 100x.
+                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !n
       !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
     - !n#
@@ -756,12 +760,12 @@ function gap(below, cashout, streak, options) {
         var game = _games[ii];
         if (game.bust >= cashout) {
             if (!current) {
-				var games = _game.id - game.id;
+                var games = _game.id - game.id;
                 result += games + " game" + (games == 1 ? "" : "s") + " (current)";
                 current = game;
             }
             else {
-				result += ", ";
+                result += ", ";
                 var games = current.id - game.id;
                 result += games + " game" + (games == 1 ? "" : "s");
                 current = game;
