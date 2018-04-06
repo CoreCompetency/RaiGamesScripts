@@ -356,7 +356,7 @@ function processByBust(channel, message, action, options) {
     /* Check input. */
     if (cashouts.length == 0) {
         /* Default to 2x. */
-        cashouts.push(channel, "2");
+        cashouts.push("2");
     }
     else if (cashouts.length > 3) {
         say(channel, "Please limit to 3 arguments.");
@@ -749,8 +749,8 @@ function streak(below, cashout, streak, options) {
 
 function gap(below, cashout, streak, options) {
     streak = streak || 1;
-    if (streak > 35) {
-        streak = 35; /* Won't be able to print this many anyway. */
+    if (streak > 100) {
+        streak = 100; /* Won't be able to print this many anyway. */
     }
 
     var result = "";
