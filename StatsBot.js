@@ -355,8 +355,10 @@ function processByBust(channel, message, action, options) {
 
     /* Check input. */
     if (cashouts.length == 0) {
-        /* Default to 2x. */
+        /* This is probably of the most interest to the most people. */
         cashouts.push("2");
+        cashouts.push("0");
+        cashouts.push("nyan");
     }
     else if (cashouts.length > 3) {
         say(channel, "Please limit to 3 arguments.");
