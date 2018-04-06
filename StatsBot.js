@@ -80,7 +80,6 @@
       !nx#
       !nyanx#:                              Returns the last # of nyans, which are a bust >= 1000.00.
                                             This is equivalent to calling "!bust nyanx#";
-    - !getnyan:                             Returns the game identifier of the last nyan and provides a link to view the game in which it occurred.
     - !s N
       !seen N:                              Provides the last time this script has seen the user specified as N.
     - !help:                                Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
@@ -202,10 +201,6 @@ engine.on("msg", function (data) {
             else if (message == "!n" || message == "!nyan") {
                 var nyan = getNyanMessage();
                 say(channel, nyan);
-            }
-            else if (message == "!getnyan") {
-                var nyan = getNyan();
-                say(channel, "Last nyan was in game " + nyan.id + ". View the game here: https://raigames.io/game/" + nyan.id);
             }
             else if (message.startsWith("!n") || message.startsWith("!nyan")) {
                 nyanToBust(channel, message, options);
@@ -358,7 +353,7 @@ function processByBust(channel, message, action, options) {
         /* This is probably of the most interest to the most people. */
         cashouts.push("2");
         cashouts.push("0");
-		cashouts.push("100");
+        cashouts.push("100");
         cashouts.push("nyan");
     }
     else if (cashouts.length > 4) {
@@ -512,11 +507,11 @@ function getNyan() {
 
 function getNyanMessage() {
     var nyan = getNyan();
-    var message = "Yeah, I saw nyan around here. It was about " + (_game.id - nyan.id) + " games ago.."
+    var message = "Yeah, I saw nyan around here. It was about " + (_game.id - nyan.id) + " games ago."
     if (nyan.time) {
-        message += " " + timeAgo(nyan.time) + ".";
+        message += ". " + timeAgo(nyan.time) + ".";
     }
-    message += " Who wants to know?";
+    message += " Here you go: https://raigames.io/game/" + nyan.id;
     return message;
 }
 
