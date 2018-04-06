@@ -119,9 +119,9 @@ var _ignore = [
     "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off" /* SoundAlerts. */
 ];
 engine.on("msg", function (data) {
-    try {
-        if (data.message) {
-            var channel = data.channelName;
+    if (data.message) {
+        var channel = data.channelName;
+        try {
             /* Easier for downstream processing to do all this in one place. */
             var message = data.message.toLowerCase()
                                       .replace(_regex.charFilter, "");
@@ -242,10 +242,10 @@ engine.on("msg", function (data) {
                 say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
             }
         }
-    }
-    catch (err) {
-        console.error(err);
-        say("spam", "Oops, I did me a heckin' error!");
+        catch (err) {
+            console.error(err);
+            say(channel, "Oops, I did me a heckin' error!");
+        }
     }
 });
 
@@ -1325,6 +1325,7 @@ function timeAgo(time) {
 }
 
 function say(channel, message) {
+    switchTo(channel);
     /* There's a limit of 499 characters per chat message.  This shouldn't be a problem too often, but, if someone does something like "!streak 1" or
        "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
        because I don't want "!streak <1000000" to print out every game that's ever been played. */
@@ -1335,6 +1336,21 @@ function say(channel, message) {
     }
     else {
         engine.chat(message);
+    }
+}
+
+/* This is hacky af, but I don't have a better solution yet.
+   Need to be on the Chat tab, and need to join channels manually. */
+function switchTo(channel) {
+    try {
+        var flag = document.querySelector(".tabs-scroller .tab img[src='/img/flags/" + channel + ".png']:only-child");
+        flag = flag || document.querySelector(".tabs-scroller .tab .unread-counter + img[src='/img/flags/" + channel + ".png']")
+        if (flag) {
+            flag.click();
+        }
+    }
+    catch (err) {
+        console.error(err);
     }
 }
 
