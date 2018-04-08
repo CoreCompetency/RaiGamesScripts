@@ -1430,7 +1430,7 @@ function timeAgo(time) {
 }
 
 function say(channel, message) {
-    //switchTo(channel);
+    switchTo(channel);
     /* There's a limit of 499 characters per chat message.  This shouldn't be a problem too often, but, if someone does something like "!streak 1" or
        "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
        because I don't want "!streak <1000000" to print out every game that's ever been played. */
