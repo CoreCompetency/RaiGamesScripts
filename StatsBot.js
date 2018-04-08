@@ -117,7 +117,10 @@
 loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js");
 loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/sha256.js");
 loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/hmac.js");
-pause(200); /* Let the resources load before continuing. */
+
+/* Let the resources load before continuing. */
+var loaded = false;
+pause(200).then(() => loaded = true);
 
 /*==================================
  Request management.
@@ -1095,6 +1098,10 @@ engine.on("game_crash", function (data) {
     }
 });
 engine.on("game_starting", function (data) {
+    if (!loaded) {
+        /* Wait for external resources to be loaded. */
+        return;
+    }
     _game = {};
     _game.id = data.game_id;
 });
@@ -1355,12 +1362,8 @@ function loadScript(url) {
     document.getElementsByTagName("head")[0].appendChild(script);
 }
 
-function sleep(ms) {
+function pause(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function pause(ms) {
-    await sleep(ms);
 }
 
 function round(value, decimals) {
