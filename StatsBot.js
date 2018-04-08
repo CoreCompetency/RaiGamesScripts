@@ -49,10 +49,12 @@
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
     - !bst joking125[ G[ H[ I]]]
       !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of series to return.
                                             Add "!details" to get the individual busts that make up the series bust.
                                             The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
     - !bst joking4[ G[ H[ I]]]
       !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            D, E, and F can also be specified in the format Dx#, where # is the number of series to return.
                                             Add "!details" to get the individual busts that make up the series bust.
                                             The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !bst [A:B:C:...]x#
@@ -67,10 +69,18 @@
                                             For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
                                             Add "!details" to get the individual busts that make up the streak.
-    - !gap [ D[ E[ F]]]                     Returns the gaps between since the last bust(s) including provided value(s), or a bust value of 2 if no arguments are provided.
+    - !gap[ D[ E[ F]]]                      Returns the gaps between the last bust(s) including provided value(s), or a bust value of 2 if no arguments are provided.
                                             D, E, and F can also be specified in the format Dx#, where # is the number of gaps to return.
                                             For example, "!gap 100x6" will return the last six gaps of games under 100x.  "!gap 1.25" will return the current number of games since the last 100x.
                                             D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
+    - !gap joking125[ G[ H[ I]]]            Returns the gaps between the last bust(s) of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            G, H, and I can also be specified in the format Gx#, where # is the number of gaps to return.
+                                            For example, "!gap joking125 6x5" will return the last five gaps between busts of maxLosses = 6.  "!gap joking125" will return the current number of games since the last bust of maxLosses = 5.
+                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
+    - !gap joking4[ G[ H[ I]]]              Returns the gaps between the last bust(s) of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
+                                            G, H, and I can also be specified in the format Gx#, where # is the number of gaps to return.
+                                            For example, "!gap joking4 6x5" will return the last five gaps between busts of maxLosses = 6.  "!gap joking4" will return the current number of games since the last bust of maxLosses = 5.
+                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
     - !n
       !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
     - !n#
@@ -228,6 +238,12 @@ engine.on("msg", function (data) {
             }
             else if (message.startsWith("!bst joking4") || message.startsWith("!bust joking4")) {
                 processJoking(channel, message, jokingBust4, options);
+            }
+            else if (message.startsWith("!gap joking125")) {
+                processJoking(channel, message, jokingGap125, options);
+            }
+            else if (message.startsWith("!gap joking4")) {
+                processJoking(channel, message, jokingGap4, options);
             }
             else if (message.startsWith("!bst") || message.startsWith("!bust")) {
                 processByBust(channel, message, bust, options);
@@ -451,15 +467,33 @@ function processJoking(channel, message, action, options) {
     /* Check for invalid arguments. */
     for (var ii = 0; ii < losses.length; ii++) {
         var text = losses[ii];
-        var loss = parseFloat(text);
+        var parts = text.split("x");
+        if (parts.length > 2) {
+            say(channel, "Wrong format: " + text);
+            return;
+        }
 
-        if (isNaN(text)) { /* Check for NaN. */
+        var loss = parseFloat(parts[0]);
+        if (isNaN(parts[0])) { /* Check for NaN. */
             say(channel, "Wrong format: " + text);
             return;
         }
         else if (loss != Math.floor(loss) || loss < 3 || loss > 9) {
             say(channel, "Please target a loss streak between 3 and 9: " + text);
             return;
+        }
+
+        if (parts.length > 1) {
+            var sets = parseFloat(parts[1]);
+
+            if (isNaN(parts[0])) { /* Check for NaN. */
+                say(channel, "Wrong format: " + text);
+                return;
+            }
+            else if (sets != Math.floor(sets) || loss < 1) {
+                say(channel, "Please target at least 1 set: " + text);
+                return;
+            }
         }
     }
 
@@ -511,7 +545,7 @@ function getNyanMessage() {
     if (nyan.time) {
         message += ". " + timeAgo(nyan.time) + ".";
     }
-    message += " Here you go: https://raigames.io/game/" + nyan.id;
+    message += " https://raigames.io/game/" + nyan.id;
     return message;
 }
 
@@ -764,7 +798,7 @@ function gap(below, cashout, streak, options) {
             }
             else {
                 result += ", ";
-                var games = current.id - game.id;
+                var games = current.id - game.id - 1;
                 result += games + " game" + (games == 1 ? "" : "s");
                 current = game;
             }
@@ -782,6 +816,10 @@ function gap(below, cashout, streak, options) {
 }
 
 function jokingProbability125(losses) {
+    if (losses.indexOf("x") > -1) {
+        return "wrong format";
+    }
+
     var p108 = (100 - prob(1.08)) / 100.0;
     var p125 = (100 - prob(1.25)) / 100.0;
     var p = p108 * Math.pow(p125, losses - 1);
@@ -789,6 +827,10 @@ function jokingProbability125(losses) {
 }
 
 function jokingProbability4(losses) {
+    if (losses.indexOf("x") > -1) {
+        return "wrong format";
+    }
+
     var p108 = (100 - prob(1.08)) / 100.0;
     var p125 = (100 - prob(1.25)) / 100.0;
     var p131 = (100 - prob(1.31)) / 100.0;
@@ -804,11 +846,13 @@ var _streak125 = [1.08, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25, 1.25];
 var _streak4 = [1.08, 1.25, 1.31, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33];
 
 function jokingBust125(losses, options) {
-    return findCustomBust(_streak125.slice(0, losses), 1, options);
+    var parts = losses.split("x");
+    return findCustomBust(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
 }
 
 function jokingBust4(losses, options) {
-    return findCustomBust(_streak4.slice(0, losses), 1, options);
+    var parts = losses.split("x");
+    return findCustomBust(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
 }
 
 function customBust(channel, message, options) {
@@ -906,6 +950,67 @@ function findCustomBust(cashouts, sets, options) {
         }
     }
     response = response.substring(0, response.length - 2); /* Trim final comma. */
+    return response;
+}
+
+function jokingGap125(losses, options) {
+    var parts = losses.split("x");
+    return findCustomGap(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+}
+
+function jokingGap4(losses, options) {
+    var parts = losses.split("x");
+    return findCustomGap(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+}
+
+function findCustomGap(cashouts, sets, options) {
+    /* The order in which we'll come across the games. */
+    cashouts.reverse();
+
+    var response = "";
+    var game = 0;
+    var current = 0;
+    for (var ii = 0; ii < sets; ii++) {
+        var found = [];
+        for (; game < _games.length; game++) {
+            var entry = _games[game];
+            if (entry.bust < cashouts[found.length]) {
+                found.push(entry);
+                if (found.length >= cashouts.length) {
+                    break;
+                }
+            }
+            else {
+                /* Back it up and start again. */
+                game = game - found.length;
+                found = [];
+            }
+        }
+
+        /* Report back. */
+        if (found.length >= cashouts.length) {
+            /* Start from the first game. */
+            found.reverse();
+
+            /* List all the games. */
+            var games = _games[current].id - found[found.length - 1].id;
+            if (!response) {
+                games += 1;
+                response += games + " game" + (games == 1 ? "" : "s") + " (current)";
+                current = game;
+            }
+            else {
+                games -= 1;
+                response += ", ";
+                response += games + " game" + (games == 1 ? "" : "s");
+                current = game;
+            }
+        }
+        else {
+            response += "never seen, ";
+            break;
+        }
+    }
     return response;
 }
 
@@ -1325,7 +1430,7 @@ function timeAgo(time) {
 }
 
 function say(channel, message) {
-    switchTo(channel);
+    //switchTo(channel);
     /* There's a limit of 499 characters per chat message.  This shouldn't be a problem too often, but, if someone does something like "!streak 1" or
        "!bust nyanx20," this could get pretty long.  Two ways to handle this:  could break the message up or could truncate it.  I chose to truncate,
        because I don't want "!streak <1000000" to print out every game that's ever been played. */
