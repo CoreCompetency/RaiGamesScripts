@@ -284,8 +284,8 @@ function processByLength(channel, message, action) {
         lengths.push("500");
         lengths.push("1000");
     }
-    else if (lengths.length > 4) {
-        say(channel, "Please limit to 4 arguments.");
+    else if (lengths.length > 10) {
+        say(channel, "Please limit to 10 arguments.");
         return;
     }
 
@@ -924,21 +924,17 @@ function findCustomGap(cashouts, sets, options, below) {
     var response = "";
     var index = 0;
     for (var ii = 0; ii < sets; ii++) {
-        var found = findPreviousBust(index, cashouts, below);
-
+        var found = findPreviousGap(index, cashouts, below);
         /* Report back. */
-        if (found) {
-            var num = found.start - index;
-
+        if (found != null) {
+            index += found + cashouts.length;
             if (!response) {
-                response += num + pluralize(" game", num) + " (current)";
+                response += found + pluralize(" game", found) + " (current)";
             }
             else {
                 response += ", ";
-                response += num + pluralize(" game", num);
+                response += found + pluralize(" game", found);
             }
-
-            index = found.end + 1;
         }
         else if (response) {
             var num = _games[index].id - _games[_games.length - 1].id + 1;
@@ -956,6 +952,14 @@ function findCustomGap(cashouts, sets, options, below) {
 /*==================================
  Building blocks.
 ===================================*/
+
+function findPreviousGap(start, cashouts, below) {
+    var found = findPreviousBust(start, cashouts, below);
+    if (found) {
+		return found.start - start;
+	}
+	return null;
+}
 
 function findPreviousBust(start, cashouts, below) {
     /* The order in which we'll come across the games.
