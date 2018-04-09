@@ -712,7 +712,7 @@ function bust(below, cashout, streak, options) {
 }
 
 function gap(below, cashout, sets, options) {
-    return findCustomGap([cashout], sets, options, false);
+    return findCustomGap([cashout], sets, options, below);
 }
 
 /*==================================
@@ -1418,6 +1418,7 @@ function say(channel, message) {
 /* This is hacky af, but I don't have a better solution yet.
    Need to be on the Chat tab, and need to join channels manually. */
 function switchTo(channel) {
+if (_scriptUsername == "wtcldgowrng3") { return; } //
     try {
         var flag = document.querySelector(".tabs-scroller .tab img[src='/img/flags/" + channel + ".png']:only-child");
         flag = flag || document.querySelector(".tabs-scroller .tab .unread-counter + img[src='/img/flags/" + channel + ".png']")
