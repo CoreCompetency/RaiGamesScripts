@@ -713,20 +713,22 @@ function bust(below, cashout, streak, options) {
     }
 
     var result = "";
-    var found = 0;
-    for (var ii = 0; ii < _games.length; ii++) {
-        var game = _games[ii];
-        if ((below && game.bust < cashout) || (!below && game.bust >= cashout)) {
-            if (result) {
-                result += ", ";
-            }
+    var index = 0;
+    for (var ii = 0; ii < streak; ii++) {
+        if (result) {
+            result += ", ";
+        }
+
+        var found = findPreviousBust(index, [cashout], below);
+        if (found) {
+            index = found.index + 1;
+            var game = found.games[0];
             var games = _game.id - game.id;
             result += games + " game" + (games == 1 ? "" : "s") + " ago (" + game.bust + "x)";
-
-            found++;
-            if (found >= streak) {
-                break;
-            }
+        }
+        else if (ii > 1) {
+            result += "reached start";
+            break;
         }
     }
     if (!result) {
