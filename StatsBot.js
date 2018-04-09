@@ -159,13 +159,13 @@ engine.on("msg", function (data) {
             if (data.username == _scriptUsername) {
                 if (message == "!stop") {
                     cacheResults();
-                    say(channel, "Script shutting down.");
+                    say("english", "Script shutting down.");
                     engine.stop();
                     return;
                 }
                 else if (message == "!clearhistory") {
                     clearCachedResults();
-                    say(channel, "Script shutting down.");
+                    say("english", "Script shutting down.");
                     engine.stop();
                     return;
                 }
@@ -1247,8 +1247,8 @@ function getCachedResults() {
     for (var ii = 0; ii < lines.length; ii++) {
         var line = lines[ii].split(",");
         var record = {};
-        record.id = line[0];
-        record.bust = line[1];
+        record.id = parseInt(line[0]);
+        record.bust = parseFloat(line[1]);
         cached.push(record);
     }
     console.log("Pulled " + lines.length + " games from remote server.");
@@ -1297,7 +1297,7 @@ function crashPointFromHash(serverSeed) {
     /* Use the most significant 52-bit from the hash to calculate the crash point. */
     var h = parseInt(hash.slice(0, 52 / 4), 16);
     var e = Math.pow(2, 52);
-    return (Math.floor((100 * e - h) / (e - h)) / 100).toFixed(2);
+    return parseFloat((Math.floor((100 * e - h) / (e - h)) / 100).toFixed(2));
 };
 
 function hmac(key, v) {
