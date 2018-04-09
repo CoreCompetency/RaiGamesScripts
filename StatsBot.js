@@ -703,39 +703,21 @@ function probability(below, cashout, streak, options) {
 }
 
 /*==================================
- The interesting stuff.
+ Aliases for the interesting stuff.
 ===================================*/
 
 function bust(below, cashout, streak, options) {
-    streak = streak || 1;
-    if (streak > 35) {
-        streak = 35; /* Won't be able to print this many anyway. */
-    }
-
-    var result = "";
-    var index = 0;
-    for (var ii = 0; ii < streak; ii++) {
-        if (result) {
-            result += ", ";
-        }
-
-        var found = findPreviousBust(index, [cashout], below);
-        if (found) {
-            index = found.index + 1;
-            var game = found.games[0];
-            var games = _game.id - game.id;
-            result += games + " game" + (games == 1 ? "" : "s") + " ago (" + game.bust + "x)";
-        }
-        else if (ii > 1) {
-            result += "reached start";
-            break;
-        }
-    }
-    if (!result) {
-        result = "never seen";
-    }
-    return result;
+    options.details = true;
+    return findCustomBust([cashout], streak, options, below);
 }
+
+function gap(below, cashout, sets, options) {
+    return findCustomGap([cashout], sets, options, false);
+}
+
+/*==================================
+ The interesting stuff.
+===================================*/
 
 function streak(below, cashout, streak, options) {
     var found = [];
@@ -779,53 +761,17 @@ function streak(below, cashout, streak, options) {
     /* Report back. */
     if (streak && found.length >= streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + ")" : "");
+        result = "seen " + games + pluralize(" game", games) + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else if (!streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + found.length + " streak " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + ")" : "");
+        result = "seen " + found.length + " streak " + games + pluralize(" game", games) + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else {
         return "never seen";
     }
-}
-
-function gap(below, cashout, streak, options) {
-    streak = streak || 1;
-    if (streak > 100) {
-        streak = 100; /* Won't be able to print this many anyway. */
-    }
-
-    var result = "";
-    var found = 0;
-    var current;
-    for (var ii = 0; ii < _games.length; ii++) {
-        var game = _games[ii];
-        if (game.bust >= cashout) {
-            if (!current) {
-                var games = _game.id - game.id;
-                result += games + " game" + (games == 1 ? "" : "s") + " (current)";
-                current = game;
-            }
-            else {
-                result += ", ";
-                var games = current.id - game.id - 1;
-                result += games + " game" + (games == 1 ? "" : "s");
-                current = game;
-            }
-
-            found++;
-            if (found >= streak) {
-                break;
-            }
-        }
-    }
-    if (!result) {
-        result = "never seen";
-    }
-    return result;
 }
 
 function jokingProbability125(losses) {
@@ -860,12 +806,12 @@ var _streak4 = [1.08, 1.25, 1.31, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33];
 
 function jokingBust125(losses, options) {
     var parts = losses.split("x");
-    return findCustomBust(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+    return findCustomBust(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options, true);
 }
 
 function jokingBust4(losses, options) {
     var parts = losses.split("x");
-    return findCustomBust(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+    return findCustomBust(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options, true);
 }
 
 function customBust(channel, message, options) {
@@ -911,21 +857,29 @@ function customBust(channel, message, options) {
     }
 
     /* Process request. */
-    var response = message + ": " + findCustomBust(cashouts, sets, options);
+    var response = message + ": " + findCustomBust(cashouts, sets, options, true);
 
     /* Print result. */
     say(channel, response);
 }
 
-function findCustomBust(cashouts, sets, options) {
+function findCustomBust(cashouts, sets, options, below) {
+    sets = sets || 1;
+    if (sets > 35) {
+        sets = 35; /* Won't be able to print this many anyway. */
+    }
+
     var response = "";
     var index = 0;
     for (var ii = 0; ii < sets; ii++) {
-        var found = findPreviousBust(index, cashouts, true);
+        var found = findPreviousBust(index, cashouts, below);
 
         /* Report back. */
+        if (response) {
+            response += ", ";
+        }
         if (found) {
-            index = found.index + 1;
+            index = found.end + 1;
             var games = found.games;
 
             /* List all the games. */
@@ -937,75 +891,64 @@ function findCustomBust(cashouts, sets, options) {
                 result += games[jj].bust + "x";
             }
 
-            var num = _game.id - games[games.length - 1].id;
-            response += "seen " + num + " game" + (num == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + "), " : ", ");
+            var num = _games[0].id - games[games.length - 1].id;
+            response += num + pluralize(" game", num) + " ago";
+            if (options.details) {
+                response += " (" + result + ")";
+            }
         }
         else {
-            response += "never seen, ";
+            response += response ? "reached start" : "never seen";
             break;
         }
     }
-    response = response.substring(0, response.length - 2); /* Trim final comma. */
     return response;
 }
 
 function jokingGap125(losses, options) {
     var parts = losses.split("x");
-    return findCustomGap(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+    return findCustomGap(_streak125.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options, true);
 }
 
 function jokingGap4(losses, options) {
     var parts = losses.split("x");
-    return findCustomGap(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options);
+    return findCustomGap(_streak4.slice(0, parts[0]), parts.length > 1 ? parts[1] : 1, options, true);
 }
 
-function findCustomGap(cashouts, sets, options) {
-    /* The order in which we'll come across the games. */
-    cashouts.reverse();
+function findCustomGap(cashouts, sets, options, below) {
+    sets = sets || 1;
+    if (sets > 60) {
+        sets = 60; /* Won't be able to print this many anyway. */
+    }
 
     var response = "";
-    var game = 0;
-    var current = 0;
+    var index = 0;
     for (var ii = 0; ii < sets; ii++) {
-        var found = [];
-        for (; game < _games.length; game++) {
-            var entry = _games[game];
-            if (entry.bust < cashouts[found.length]) {
-                found.push(entry);
-                if (found.length >= cashouts.length) {
-                    break;
-                }
-            }
-            else {
-                /* Back it up and start again. */
-                game = game - found.length;
-                found = [];
-            }
-        }
+        var found = findPreviousBust(index, cashouts, below);
 
         /* Report back. */
-        if (found.length >= cashouts.length) {
-            /* Start from the first game. */
-            found.reverse();
+        if (found) {
+            var num = found.start - index;
 
-            /* List all the games. */
-            var games = _games[current].id - found[found.length - 1].id;
             if (!response) {
-                games += 1;
-                response += games + " game" + (games == 1 ? "" : "s") + " (current)";
-                current = game;
+                response += num + pluralize(" game", num) + " (current)";
             }
             else {
-                games -= 1;
                 response += ", ";
-                response += games + " game" + (games == 1 ? "" : "s");
-                current = game;
+                response += num + pluralize(" game", num);
             }
+
+            index = found.end + 1;
         }
-        else {
-            response += "never seen, ";
+        else if (response) {
+            var num = _games[index].id - _games[_games.length - 1].id + 1;
+            response += ", ";
+            response += num + pluralize(" game", num) + " (start)";
             break;
         }
+    }
+    if (!response) {
+        response = "never seen";
     }
     return response;
 }
@@ -1015,8 +958,9 @@ function findCustomGap(cashouts, sets, options) {
 ===================================*/
 
 function findPreviousBust(start, cashouts, below) {
-    /* The order in which we'll come across the games. */
-    cashouts.reverse();
+    /* The order in which we'll come across the games.
+       Since reverse modifies in-place, make a copy first.*/
+    cashouts = cashouts.slice(0).reverse();
 
     var found = [];
     for (var ii = start; ii < _games.length; ii++) {
@@ -1025,8 +969,7 @@ function findPreviousBust(start, cashouts, below) {
         if ((below && entry.bust < cashout) || (!below && entry.bust >= cashout)) {
             found.push(entry);
             if (found.length >= cashouts.length) {
-                /* Start from the first game, but keep the index where it is. */
-                return { index: ii - (cashouts.length - 1), games: found.reverse() };
+                return { start: ii - (cashouts.length - 1), end: ii, games: found.reverse() };
             }
         }
         else {
@@ -1451,6 +1394,10 @@ function timeAgo(time) {
         }
     }
     return ago;
+}
+
+function pluralize(text, num) {
+    return num == 1 ? text : text + "s";
 }
 
 function say(channel, message) {
