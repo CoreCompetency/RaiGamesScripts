@@ -520,7 +520,7 @@ function processJoking(channel, message, action, options) {
 }
 
 /*==================================
- Calculations for requests.
+ Nyan.
 ===================================*/
 
 function getNyan() {
@@ -570,6 +570,10 @@ function nyanToBust(channel, message, options) {
         }
     }
 }
+
+/*==================================
+ Math calculations.
+===================================*/
 
 function median(start, length) {
     try {
@@ -697,6 +701,10 @@ function probability(below, cashout, streak, options) {
 
     return "~" + round(p, 3) + "%";
 }
+
+/*==================================
+ The interesting stuff.
+===================================*/
 
 function bust(below, cashout, streak, options) {
     streak = streak || 1;
@@ -908,44 +916,27 @@ function customBust(channel, message, options) {
 }
 
 function findCustomBust(cashouts, sets, options) {
-    /* The order in which we'll come across the games. */
-    cashouts.reverse();
-
     var response = "";
-    var game = 0;
+    var index = 0;
     for (var ii = 0; ii < sets; ii++) {
-        var found = [];
-        for (; game < _games.length; game++) {
-            var entry = _games[game];
-            if (entry.bust < cashouts[found.length]) {
-                found.push(entry);
-                if (found.length >= cashouts.length) {
-                    break;
-                }
-            }
-            else {
-                /* Back it up and start again. */
-                game = game - found.length;
-                found = [];
-            }
-        }
+        var found = findPreviousBust(index, cashouts, true);
 
         /* Report back. */
-        if (found.length >= cashouts.length) {
-            /* Start from the first game. */
-            found.reverse();
+        if (found) {
+            index = found.index + 1;
+            var games = found.games;
 
             /* List all the games. */
             var result = "";
-            for (var jj = 0; jj < found.length; jj++) {
+            for (var jj = 0; jj < games.length; jj++) {
                 if (result) {
                     result += ", ";
                 }
-                result += found[jj].bust + "x";
+                result += games[jj].bust + "x";
             }
 
-            var games = _game.id - found[found.length - 1].id;
-            response += "seen " + games + " game" + (games == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + "), " : ", ");
+            var num = _game.id - games[games.length - 1].id;
+            response += "seen " + num + " game" + (num == 1 ? "" : "s") + " ago" + (options.details ? " (" + result + "), " : ", ");
         }
         else {
             response += "never seen, ";
@@ -1015,6 +1006,34 @@ function findCustomGap(cashouts, sets, options) {
         }
     }
     return response;
+}
+
+/*==================================
+ Building blocks.
+===================================*/
+
+function findPreviousBust(start, cashouts, below) {
+    /* The order in which we'll come across the games. */
+    cashouts.reverse();
+
+    var found = [];
+    for (var ii = start; ii < _games.length; ii++) {
+        var entry = _games[ii];
+        var cashout = cashouts[found.length];
+        if ((below && entry.bust < cashout) || (!below && entry.bust >= cashout)) {
+            found.push(entry);
+            if (found.length >= cashouts.length) {
+                /* Start from the first game, but keep the index where it is. */
+                return { index: ii - (cashouts.length - 1), games: found.reverse() };
+            }
+        }
+        else {
+            /* Back it up and start again. */
+            ii = ii - found.length;
+            found = [];
+        }
+    }
+    return null;
 }
 
 /*==================================
