@@ -251,6 +251,9 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!bst") || message.startsWith("!bust")) {
                 processByBust(channel, message, bust, options);
             }
+            else if (message.startsWith("!gapmax")) {
+                processByBust(channel, message, gapMax, options);
+            }
             else if (message.startsWith("!gap")) {
                 processByBust(channel, message, gap, options);
             }
@@ -451,7 +454,7 @@ function processByBust(channel, message, action, options) {
 
 function processJoking(channel, message, action, options) {
     /* Get the losses that come after the command. */
-    var losses = message.split(" ").filter(function (ii) { return ii; });
+    var losses = message.split(" ").filter(function(ii) { return ii; });
     losses = losses.slice(2);
 
     /* Check input. */
@@ -761,12 +764,12 @@ function streak(below, cashout, streak, options) {
     /* Report back. */
     if (streak && found.length >= streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + games + pluralize(" game", games) + " ago" + (options.details ? " (" + result + ")" : "");
+        result = "seen " + pluralize(games, "game") + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else if (!streak) {
         var games = _game.id - found[found.length - 1].id;
-        result = "seen " + found.length + " streak " + games + pluralize(" game", games) + " ago" + (options.details ? " (" + result + ")" : "");
+        result = "seen " + found.length + " streak " + pluralize(games, "game") + " ago" + (options.details ? " (" + result + ")" : "");
         return result;
     }
     else {
@@ -892,7 +895,7 @@ function findCustomBust(cashouts, sets, options, below) {
             }
 
             var num = _games[0].id - games[games.length - 1].id;
-            response += num + pluralize(" game", num) + " ago";
+            response += pluralize(num, "game") + " ago";
             if (options.details) {
                 response += " (" + result + ")";
             }
@@ -929,21 +932,113 @@ function findCustomGap(cashouts, sets, options, below) {
         if (found != null) {
             index += found + cashouts.length;
             if (!response) {
-                response += found + pluralize(" game", found) + " (current)";
+                response += pluralize(found, "game") + " (current)";
             }
             else {
                 response += ", ";
-                response += found + pluralize(" game", found);
+                response += pluralize(found, "game");
             }
         }
-        else if (response) {
+        else if (response && index < _games.length) {
             var num = _games[index].id - _games[_games.length - 1].id + 1;
             response += ", ";
-            response += num + pluralize(" game", num) + " (start)";
+            response += pluralize(num, "game") + " (start)";
             break;
         }
     }
     if (!response) {
+        response = "never seen";
+    }
+    return response;
+}
+
+function gapMax(below, cashout, sets, options) {
+    sets = sets || 1;
+    if (sets > 60) {
+        sets = 60; /* Won't be able to print this many anyway. */
+    }
+
+    var relevant = _games.filter(function(game) { return below ? game.bust < cashout : game.bust >= cashout; });
+    var results = [];
+    var current = _games[0];
+    for (var ii = 0; ii < relevant.length; ii++) {
+        var game = relevant[ii];
+    	if (!results.length) {
+			results.push({ games: current.id - game.id, info: " (current)" });
+		}
+		else {
+			results.push({ games: current.id - game.id - 1 });
+		}
+        current = game;
+    }
+
+    var first = _games[_games.length - 1];
+    if (current.id != first.id) {
+        results.push({ games: current.id - first.id, info: " (start)" });
+    }
+    else {
+        current.info = " (start)";
+    }
+    results.sort(function (a, b) { return b.games - a.games; });
+
+	if (sets > results.length) {
+		sets = results.length;
+	}
+	
+    var response = "";
+    if (results) {
+        for (var ii = 0; ii < sets; ii++) {
+            if (response) {
+                response += ", ";
+            }
+            var result = results[ii];
+            response += pluralize(result.games, "game");
+			if (result.info) {
+				response += result.info;
+			}
+        }
+    }
+    else {
+        response = "never seen";
+    }
+    return response;
+}
+
+/* Not functional yet.. freezes up the browser.  Also look to gapMax for updates. */
+function findCustomGapMax(cashouts, sets, options, below) {
+    sets = sets || 1;
+    if (sets > 60) {
+        sets = 60; /* Won't be able to print this many anyway. */
+    }
+
+    var results = [];
+    var index = 0;
+    while (true) {
+        var found = findPreviousGap(index, cashouts, below);
+        /* Report back. */
+        if (found != null) {
+            index += found + cashouts.length;
+            results.push({ games: found, info: results ? null : " (current)" });
+        }
+        else if (results && index < _games.length) {
+            results.push({ games: _games[index].id - _games[_games.length - 1].id + 1, info: " (start)" });
+            break;
+        }
+    }
+
+    results.sort(function (a, b) { return a.games - b.games; });
+
+    var response = "";
+    if (results) {
+        for (var ii = 0; ii < sets; ii++) {
+            if (response) {
+                response += ", ";
+            }
+            var result = results[ii];
+            response += pluralize(result.games, "game") + result.info;
+        }
+    }
+    else {
         response = "never seen";
     }
     return response;
@@ -956,9 +1051,9 @@ function findCustomGap(cashouts, sets, options, below) {
 function findPreviousGap(start, cashouts, below) {
     var found = findPreviousBust(start, cashouts, below);
     if (found) {
-		return found.start - start;
-	}
-	return null;
+        return found.start - start;
+    }
+    return null;
 }
 
 function findPreviousBust(start, cashouts, below) {
@@ -1247,7 +1342,7 @@ function getCachedResults() {
     var csv = new XMLHttpRequest();
     csv.open("GET", "https://corecompetency.github.io/RaiGamesScripts/Results.csv", false); /* Block, don't do this asynchronously. */
     csv.send(null);
-    var lines = csv.responseText.split("\n").filter(function (ii) { return ii; });
+    var lines = csv.responseText.split("\n").filter(function(ii) { return ii; });
     for (var ii = 0; ii < lines.length; ii++) {
         var line = lines[ii].split(",");
         var record = {};
@@ -1400,8 +1495,12 @@ function timeAgo(time) {
     return ago;
 }
 
-function pluralize(text, num) {
-    return num == 1 ? text : text + "s";
+function pluralize(num, text) {
+    var result = num + " " + text;
+    if (num != 1) {
+        result += "s";
+    }
+    return result;
 }
 
 function say(channel, message) {
