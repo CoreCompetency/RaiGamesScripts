@@ -1,114 +1,16 @@
-/* This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
+/*==================================
+This is a script that can be run on RaiGames.io to provide stats based on chat prompts.
+The commands that this script supports can be found on its wiki page:  https://github.com/CoreCompetency/RaiGamesScripts/wiki/StatsBot-Commands
 
-   The following commands can be called by anyone:
-    - !med[ A[ B[ C]]]
-      !median[ A[ B[ C]]]:                  Returns the median(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
-                                            For example, "!med 500x2" will return the last two intervals of 500 games, which is a median for games 1-500 and another for games 501-1000.
-                                            A, B, or C can also be the word "all" to specify all games.
-    - !mean[ A[ B[ C]]]
-      !avg[ A[ B[ C]]]
-      !average[ A[ B[ C]]]:                 Returns the average(s) of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
-                                            For example, "!avg 500x2" will return the last two intervals of 500 games, which is an average for games 1-500 and another for games 501-1000.
-                                            A, B, or C can also be the word "all" to specify all games.
-    - !min[ A[ B[ C]]]
-      !minimum[ A[ B[ C]]]:                 Returns the lowest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
-                                            For example, "!min 500x2" will return the last two intervals of 500 games, which is the minimum bust for games 1-500 and another for games 501-1000.
-                                            A, B, or C can also be the word "all" to specify all games.
-    - !max[ A[ B[ C]]]
-      !maximum[ A[ B[ C]]]:                 Returns the highest bust of the last A[, B[, and C]] games, or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
-                                            For example, "!min 500x2" will return the last two intervals of 500 games, which is the maximum bust for games 1-500 and another for games 501-1000.
-                                            A, B, or C can also be the word "all" to specify all games.
-    - !mode[ A[ B[ C]]]:                    Returns the mode(s) of the last A[, B[, and C]] games(, separated by |), or the last 100 games if no arguments are provided.
-                                            A, B, and C can also be specified in the format Ax#, where # is the number of sets of A to go back.
-                                            For example, "!mode 500x2" will return the last two intervals of 500 games, which is the mode(s) for games 1-500 and the mode(s) for games 501-1000.
-                                            A, B, or C can also be the word "all" to specify all games.
-    - !prb[ D[ E[ F]]]
-      !prob[ D[ E[ F]]]
-      !probability[ D[ E[ F]]]:             Returns the probability(ies) of the given bust(s), or a bust of 2 if no arguments are provided.
-                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of times in a row D appears.
-                                            For example, "!prob <1.25x6" will return the probability of six busts under 1.25x in a row.
-                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
-    - !prb joking125[ G[ H[ I]]]
-      !prob joking125[ G[ H[ I]]]
-      !probability joking125[ G[ H[ I]]]:   Returns the probability that Joking313's 1.25x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
-    - !prb joking4[ G[ H[ I]]]
-      !prob joking4[ G[ H[ I]]]
-      !probability joking4[ G[ H[ I]]]:     Returns the probability that Joking313's 4x Script busts with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
-    - !bst[ D[ E[ F]]]
-      !bust[ D[ E[ F]]]:                    Returns the last bust including or below the provided value(s), or a bust value of 2 if no arguments are provided.
-                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of busts to return.
-                                            For example, "!bust <1.25x6" will return the last six busts under 1.25x.  "!bust 1.25" will return the last bust above or equal to 1.25.
-                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
-    - !bst joking125[ G[ H[ I]]]
-      !bust joking125[ G[ H[ I]]]:          Returns the last bust of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of series to return.
-                                            Add "!details" to get the individual busts that make up the series bust.
-                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
-    - !bst joking4[ G[ H[ I]]]
-      !bust joking4[ G[ H[ I]]]:            Returns the last bust of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of series to return.
-                                            Add "!details" to get the individual busts that make up the series bust.
-                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
-    - !bst [A:B:C:...]x#
-      !bust [A:B:C:...]x#:                  Returns the last (#) bust(s) for the provided series.
-                                            This allows callers to check for custom bust streaks to quickly test strategies.
-                                            Add "!details" to get the individual busts that make up the series bust.
-    - !streak[ D[ E[ F]]]:                  Returns the maximum streak seen for the given bust(s), or a bust of 2 if no arguments are provided.
-                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            Add "!details" to get the individual busts that make up the streak.
-    - !streak Dx#[ Ex#[ Fx#]]]:             Returns the last streak of length # seen for the given bust(s).
-                                            < and > can precede the bust value to indicate above (or equal to) or below the bust value.
-                                            For example, "!streak <1.25x6" will return the last streak of six busts in a row under 1.25x.
-                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
-                                            Add "!details" to get the individual busts that make up the streak.
-    - !gap[ D[ E[ F]]]                      Returns the gaps between the last bust(s) including provided value(s), or a bust value of 2 if no arguments are provided.
-                                            D, E, and F can also be specified in the format Dx#, where # is the number of gaps to return.
-                                            For example, "!gap 100x6" will return the last six gaps of games under 100x.  "!gap 1.25" will return the current number of games since the last 100x.
-                                            D, E, or F can also be the word "nyan" or the letter "n" to specify a bust of 1000.
-    - !gap joking125[ G[ H[ I]]]            Returns the gaps between the last bust(s) of Joking313's 1.25x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            G, H, and I can also be specified in the format Gx#, where # is the number of gaps to return.
-                                            For example, "!gap joking125 6x5" will return the last five gaps between busts of maxLosses = 6.  "!gap joking125" will return the current number of games since the last bust of maxLosses = 5.
-                                            The 1.25x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/125xScript(Nano%2CEth).js
-    - !gap joking4[ G[ H[ I]]]              Returns the gaps between the last bust(s) of Joking313's 4x Script with the maxLosses provided, or maxLosses = 5 if no arguments are provided.
-                                            G, H, and I can also be specified in the format Gx#, where # is the number of gaps to return.
-                                            For example, "!gap joking4 6x5" will return the last five gaps between busts of maxLosses = 6.  "!gap joking4" will return the current number of games since the last bust of maxLosses = 5.
-                                            The 4x Script can be found here:  https://github.com/Joking313/Scripts/blob/master/4xScript(Nano%2CEth).js
-    - !n
-      !nyan:                                Returns the last time there was a nyan, which is a bust >= 1000.00.
-    - !n#
-      !nyan#
-      !n #
-      !nyan #
-      !nx#
-      !nyanx#:                              Returns the last # of nyans, which are a bust >= 1000.00.
-                                            This is equivalent to calling "!bust nyanx#";
-    - !s N
-      !seen N:                              Provides the last time this script has seen the user specified as N.
-    - !help:                                Provides a link to this script in github for review of these comments.  Also provides a link to open issues.
-    - !helpline:                            Provides information about the National Problem Gambling Helpline.
-    - !donate
-      !tip:                                 Provides information for monetary thanks for running the script.
-                                            If you are running your own copy of the script, you may want to replace the nano address with your own.
-    - !script
-      !scripts                              Provides links to commonly-used scripts.
+In addition to the public commands found on the wiki, the following commands can be called by the account running this script:
+- !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
+                  This will also trigger in-memory games to get stored to localStorage for the next run.
+- !clearhistory:  This will clear games from localStorage.  It should be used if something gets messed up.
+                  This will also trigger the script to stop so that the next run can fill localStorage again.
 
-    Mentioning the name of the account running this script in chat will trigger a snarky response.
-    Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a snarky response.
-
-    The following commands can be called by the account running this script:
-    - !stop:          This will stop the script and provide feedback in the chat.  (This is to alert players that the script is shutting down.)
-                      This will also trigger in-memory games to get stored to localStorage for the next run.
-    - !clearhistory:  This will clear games from the localStorage.  To be used if something gets messed up.
-                      This will also trigger the script to stop so that the next run can fill localStorage again.
-*/
+Mentioning the name of the account running this script in chat will trigger a snarky response.
+Mentioning the name of the original RaiGames.io bot (Shiba) will also trigger a (different) snarky response.
+===================================*/
 
 /*==================================
  External resources.
@@ -120,7 +22,7 @@ loadScript("https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/hm
 
 /* Let the resources load before continuing. */
 var loaded = false;
-pause(200).then(() => loaded = true);
+pause(300).then(() => loaded = true);
 
 /*==================================
  Request management.
@@ -129,7 +31,8 @@ pause(200).then(() => loaded = true);
 var _ignore = [
     "!kill", /* Joking313 scripts. */
     "!cashout", "!stop", "!stopafterwin", "!chase.start", "!chase.stop", /* CustomizableBot. */
-    "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off" /* SoundAlerts. */
+    "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off", /* SoundAlerts. */
+    "!mute", "!pattern" /* LivS commands. */
 ];
 engine.on("msg", function (data) {
     if (data.message) {
@@ -171,8 +74,8 @@ engine.on("msg", function (data) {
                 }
             }
             if (message == "!help") {
-                say(channel, "You can find the script I'm running with instructions on how to call it here:  https://github.com/CoreCompetency/RaiGamesScripts/blob/master/StatsBot.js");
-                say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues");
+                say(channel, "Check out my wiki page for all of my commands:  https://github.com/CoreCompetency/RaiGamesScripts/wiki/StatsBot-Commands");
+                say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues/new");
             }
             else if (message == "!helpline") {
                 say(channel, "National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
@@ -562,7 +465,7 @@ function nyanToBust(channel, message, options) {
         say(channel, "Wrong format: " + arg);
     }
     else {
-        if (arg.startsWith("x")) {
+        if (arg.startsWith("x") || arg.startsWith(":")) {
             arg = arg.substring(1);
         }
         if (isNaN(arg) || parseInt(arg) != arg || arg < 1) {
@@ -963,12 +866,12 @@ function gapMax(below, cashout, sets, options) {
     var current = _games[0];
     for (var ii = 0; ii < relevant.length; ii++) {
         var game = relevant[ii];
-    	if (!results.length) {
-			results.push({ games: current.id - game.id, info: " (current)" });
-		}
-		else {
-			results.push({ games: current.id - game.id - 1 });
-		}
+        if (!results.length) {
+            results.push({ games: current.id - game.id, info: " (current)" });
+        }
+        else {
+            results.push({ games: current.id - game.id - 1 });
+        }
         current = game;
     }
 
@@ -981,10 +884,10 @@ function gapMax(below, cashout, sets, options) {
     }
     results.sort(function (a, b) { return b.games - a.games; });
 
-	if (sets > results.length) {
-		sets = results.length;
-	}
-	
+    if (sets > results.length) {
+        sets = results.length;
+    }
+
     var response = "";
     if (results) {
         for (var ii = 0; ii < sets; ii++) {
@@ -993,9 +896,9 @@ function gapMax(below, cashout, sets, options) {
             }
             var result = results[ii];
             response += pluralize(result.games, "game");
-			if (result.info) {
-				response += result.info;
-			}
+            if (result.info) {
+                response += result.info;
+            }
         }
     }
     else {
@@ -1521,6 +1424,7 @@ function say(channel, message) {
 /* This is hacky af, but I don't have a better solution yet.
    Need to be on the Chat tab, and need to join channels manually. */
 function switchTo(channel) {
+if (_scriptUsername == "wtcldgowrng3") { return; } //
     try {
         var flag = document.querySelector(".tabs-scroller .tab img[src='/img/flags/" + channel + ".png']:only-child");
         flag = flag || document.querySelector(".tabs-scroller .tab .unread-counter + img[src='/img/flags/" + channel + ".png']")
