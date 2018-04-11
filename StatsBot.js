@@ -139,6 +139,18 @@ engine.on("msg", function (data) {
             else if ((message.startsWith("!bst") || message.startsWith("!bust")) && message.indexOf("[") > -1) {
                 customBust(channel, message, options);
             }
+            else if (message.startsWith("!bst joking125x") || message.startsWith("!bust joking125x")) {
+                processJoking(channel, "!bust joking125 5x" + message.substring(message.indexOf("x") + 1), jokingBust125, options);
+            }
+            else if (message.startsWith("!bst joking4x") || message.startsWith("!bust joking4x")) {
+                processJoking(channel, "!bust joking4 5x" + message.substring(message.indexOf("x") + 1), jokingBust4, options);
+            }
+            else if (message.startsWith("!gap joking125x")) {
+                processJoking(channel, "!gap joking125 5x" + message.substring(message.indexOf("x") + 1), jokingGap125, options);
+            }
+            else if (message.startsWith("!gap joking4x")) {
+                processJoking(channel, "!gap joking4 5x" + message.substring(message.indexOf("x") + 1), jokingGap4, options);
+            }
             else if (message.startsWith("!bst joking125") || message.startsWith("!bust joking125")) {
                 processJoking(channel, message, jokingBust125, options);
             }
@@ -165,6 +177,21 @@ engine.on("msg", function (data) {
             }
             else if (message.startsWith("!") && message.length > 1 && !isNaN(message[1]) && !isNaN(parseInt(message[1]))) {
                 processByBust(channel, "!bust " + message.substring(1), bust, options);
+            }
+            else if (message.startsWith("![")) {
+                customBust(channel, "!bust " + message.substring(1), options);
+            }
+            else if (message.startsWith("!joking125x")) {
+                processJoking(channel, "!bust joking125 5x" + message.substring(message.indexOf("x") + 1), jokingBust125, options);
+            }
+            else if (message.startsWith("!joking4x")) {
+                processJoking(channel, "!bust joking4 5x" + message.substring(message.indexOf("x") + 1), jokingBust4, options);
+            }
+            else if (message.startsWith("!joking125")) {
+                processJoking(channel, "!bust " + message.substring(1), jokingBust125, options);
+            }
+            else if (message.startsWith("!joking4")) {
+                processJoking(channel, "!bust " + message.substring(1), jokingBust4, options);
             }
             else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
                 say(channel, "I don't know that command. Use !help to view the commands I know or to submit a feature request.");
