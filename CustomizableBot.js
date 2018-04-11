@@ -364,7 +364,7 @@ if (checkVariables()) {
         }
 
         if (!testMode) {
-            engine.placeBet(entry.bet * 100, entry.cashout * 100);
+            engine.placeBet(Math.round(entry.bet * 100), Math.round(entry.cashout * 100));
         }
         else {
             addTestBalance(-entry.bet);
