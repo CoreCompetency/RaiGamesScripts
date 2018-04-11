@@ -78,7 +78,7 @@ engine.on("msg", function (data) {
                 say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues/new");
             }
             else if (message == "!helpline") {
-                say(channel, "National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+                say(channel, "National Gambling Helpline: 1-800-522-4700. Available 24/7/365 and 100% confidential. Call or text today!");
             }
             else if (message == "!donate") {
                 say(channel, "Donations can be sent to xrb_3hxmcttfudkmb9b5wj7tix88img9yxe555x45ejuppz8xf56yttgama3nydz or transferred to this account. Thanks!");
@@ -90,7 +90,7 @@ engine.on("msg", function (data) {
                 say(channel, "Commonly-used, scripted strategies can be found here: https://github.com/Joking313/Scripts");
                 say(channel, "If you'd like to create and test your own strategy, you can use this customizable script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/CustomizableBot.js");
                 say(channel, "You can also use this test framework to test any other script: https://github.com/CoreCompetency/RaiGamesScripts/blob/master/TestFramework.js");
-                say(channel, "Remember that no script or strategy is expected to make money over time.  If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
+                say(channel, "Remember that no script or strategy is expected to make money over time. If you feel yourself becoming addicted to gambling, use the !helpline command to get the National Gambling Helpline phone number.");
             }
             else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
                 snark(channel);
@@ -163,8 +163,11 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!streak")) {
                 processByBust(channel, message, streak, options);
             }
+            else if (message.startsWith("!") && message.length > 1 && !isNaN(message[1]) && !isNaN(parseInt(message[1]))) {
+                processByBust(channel, "!bust " + message.substring(1), bust, options);
+            }
             else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
-                say(channel, "I don't know that command.  Use !help to view the commands I know or to submit a feature request.");
+                say(channel, "I don't know that command. Use !help to view the commands I know or to submit a feature request.");
             }
         }
         catch (err) {
@@ -1183,7 +1186,7 @@ function getUserInfo(username) {
 ===================================*/
 
 var _snarks = [];
-_snarks.push("National Gambling Helpline: 1-800-522-4700.  Available 24/7/365 and 100% confidential.  Call or text today!");
+_snarks.push("National Gambling Helpline: 1-800-522-4700. Available 24/7/365 and 100% confidential. Call or text today!");
 _snarks.push("Don't sass me.");
 _snarks.push("You've got to ask yourself one question: do I feel lucky? Well do ya, punk?");
 _snarks.push("There's no shame in my robot game.");
@@ -1424,7 +1427,6 @@ function say(channel, message) {
 /* This is hacky af, but I don't have a better solution yet.
    Need to be on the Chat tab, and need to join channels manually. */
 function switchTo(channel) {
-if (_scriptUsername == "wtcldgowrng3") { return; } //
     try {
         var flag = document.querySelector(".tabs-scroller .tab img[src='/img/flags/" + channel + ".png']:only-child");
         flag = flag || document.querySelector(".tabs-scroller .tab .unread-counter + img[src='/img/flags/" + channel + ".png']")
