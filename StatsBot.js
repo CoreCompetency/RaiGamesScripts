@@ -193,7 +193,7 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!joking4")) {
                 processJoking(channel, "!bust " + message.substring(1), jokingBust4, options);
             }
-            else if (message.startsWith("!") && _ignore.indexOf(message) == -1) {
+            else if (message.startsWith("!") && _ignore.indexOf(message.split(" ")[0]) == -1) {
                 say(channel, "I don't know that command. Use !help to view the commands I know or to submit a feature request.");
             }
         }
