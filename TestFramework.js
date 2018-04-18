@@ -31,6 +31,32 @@ var testSettings = {
 if (testSettings.enabled) {
     var result = { notPlayed: "NOT_PLAYED", won: "WON", lost: "LOST" };
 
+    var testHelper = {
+        add: function(value) {
+            testTracking.balance = this.round(testTracking.balance + value);
+        },
+        subtract: function(value) {
+            this.add(-value);
+        },
+        scale: function(value) {
+            return this.round(value / 100.0);
+        },
+        round: function(value, whole) {
+            if (whole) {
+                return Math.round(value);
+            }
+            return Math.round(value * 100.0) / 100.0;
+        },
+        run: function(event, data) {
+            if (testTracking.delay.hasOwnProperty(event)) {
+                var events = testTracking.delay[event];
+                for (var ii = 0; ii < events.length; ii++) {
+                    events[ii](data);
+                }
+            }
+        }
+    };
+
     var testTracking = {
         balance: testSettings.mode == testBalance.real ? testHelper.scale(engine.getBalance()) : 10000,
         result: result.notPlayed,
@@ -133,36 +159,6 @@ if (testSettings.enabled) {
     engine.lastGamePlayed = function() {
         return testTracking.lastGamePlayed && testTracking.lastGamePlayed == (testTracking.game - 1);
     }
-
-    /*==================================
-     Helper functions.
-    ===================================*/
-
-    var testHelper = {
-        add: function(value) {
-            testTracking.balance = this.round(testTracking.balance + value);
-        },
-        subtract: function(value) {
-            this.add(-value);
-        },
-        scale: function(value) {
-            return this.round(value / 100.0);
-        },
-        round: function(value, whole) {
-            if (whole) {
-                return Math.round(value);
-            }
-            return Math.round(value * 100.0) / 100.0;
-        },
-        run: function(event, data) {
-            if (testTracking.delay.hasOwnProperty(event)) {
-                var events = testTracking.delay[event];
-                for (var ii = 0; ii < events.length; ii++) {
-                    events[ii](data);
-                }
-            }
-        }
-    };
 
     /*==================================
      User alert.
