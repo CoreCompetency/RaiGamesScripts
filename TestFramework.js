@@ -58,7 +58,7 @@ if (testSettings.enabled) {
     };
 
     var testTracking = {
-        balance: testSettings.mode == testBalance.real ? testHelper.scale(engine.getBalance()) : 10000,
+        balance: testSettings.mode == testBalance.real ? testHelper.scale(engine.getBalance()) : 20000,
         result: result.notPlayed,
         delay: {
             "game_crash": []
