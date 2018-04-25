@@ -122,7 +122,7 @@ if (testSettings.enabled) {
         }
         else if (testTracking.running == true) {
             if (testTracking.current) {
-                testHelper.add(testTracking.current.bet * testHelper.scale(engine.getCurrentPayout()));
+                testHelper.add(testTracking.current.bet * engine.getCurrentPayout());
                 testTracking.current = null;
                 testTracking.result = result.won;
             }
