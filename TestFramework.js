@@ -79,7 +79,6 @@ if (testSettings.enabled) {
     };
 
     engine.on("game_starting", function(data) {
-        testTracking.game = data.game_id;
         testTracking.result = result.notPlayed;
     });
 
@@ -93,7 +92,6 @@ if (testSettings.enabled) {
             cashout: testHelper.scale(cashout)
         };
         testHelper.subtract(testTracking.current.bet);
-        testTracking.lastGamePlayed = testTracking.game;
     }
 
     engine.on("game_crash", function(data) {
@@ -157,7 +155,7 @@ if (testSettings.enabled) {
     }
 
     engine.lastGamePlayed = function() {
-        return testTracking.lastGamePlayed && testTracking.lastGamePlayed == (testTracking.game - 1);
+        return testTracking.result != result.notPlayed;
     }
 
     /*==================================
