@@ -32,7 +32,9 @@ var _ignore = [
     "!kill", /* Joking313 scripts. */
     "!cashout", "!stop", "!stopafterwin", "!chase.start", "!chase.stop", /* CustomizableBot. */
     "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off", /* SoundAlerts. */
-    "!mute", "!pattern" /* LivS commands. */
+    "!mute", "!pattern", "!count", /* LivS commands. */
+    //"!blck", "!blk", "!bl", "!bst",  "!bt", "!conver", "!conv", "!cv", "!c", "!scam", "!h", "!faq", "!lck", "!lic", "!lik", "!lk", "!n", "!ny", "!na", "!nn", "!nya", "!nyn", "!nan", "!med", "!prb", "!pob", "!pb", "!p", "!prfit", "!profi", "!prof", "!prft", "!prf", "!prt", "!sen", "!sn", "!s", "!w", "!wager", "!wagerd", "!wagr", "!wagrd", "!wagred", "!wd", "!wg", "!wgd", "!wger", "!wgerd", "!wgr", "!wgrd", "!wgred", "!wagered", /* Shiba commands. */
+    "!ignore" /* General chat. */
 ];
 engine.on("msg", function (data) {
     if (data.message) {
@@ -41,6 +43,21 @@ engine.on("msg", function (data) {
             /* Easier for downstream processing to do all this in one place. */
             var message = data.message.toLowerCase()
                                       .replace(_regex.charFilter, "");
+
+            if (data.username == _scriptUsername) {
+                if (message == "!stop") {
+                    cacheResults();
+                    say("spam", "Script shutting down.");
+                    engine.stop();
+                    return;
+                }
+                else if (message == "!clearhistory") {
+                    clearCachedResults();
+                    say("spam", "Script shutting down.");
+                    engine.stop();
+                    return;
+                }
+            }
 
             var options = { details: false };
             var index = message.indexOf("!details");
@@ -58,21 +75,11 @@ engine.on("msg", function (data) {
                 options.details = true;
                 message = message.replace("!dtl", "");
             }
-
-            if (data.username == _scriptUsername) {
-                if (message == "!stop") {
-                    cacheResults();
-                    say("english", "Script shutting down.");
-                    engine.stop();
-                    return;
-                }
-                else if (message == "!clearhistory") {
-                    clearCachedResults();
-                    say("english", "Script shutting down.");
-                    engine.stop();
-                    return;
-                }
-            }
+            
+            if (channel == "english") {
+                return;
+            }            
+            
             if (message == "!help") {
                 say(channel, "Check out my wiki page for all of my commands:  https://github.com/CoreCompetency/RaiGamesScripts/wiki/StatsBot-Commands");
                 say(channel, "If you'd like to report a bug or submit a feature request, you can do so here:  https://github.com/CoreCompetency/RaiGamesScripts/issues/new");
@@ -95,8 +102,14 @@ engine.on("msg", function (data) {
             else if (data.username != _scriptUsername && message.indexOf(_scriptUsername.toLowerCase()) > -1) {
                 snark(channel);
             }
-            else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
+            /*else if (data.username != _scriptUsername && message.indexOf("shiba") > -1) {
                 shibaSnark(channel);
+            }*/
+            else if (_ignore.indexOf(message.split(" ")[0]) > -1) {
+                return;
+            }
+            else if ((message.startsWith("!prb") || message.startsWith("!prob")) && message.indexOf("[") > -1) {
+                customProb(channel, message, options);
             }
             else if (message.startsWith("!prb joking125") || message.startsWith("!prob joking125") || message.startsWith("!probability joking125")) {
                 processJoking(channel, message, jokingProbability125);
@@ -193,7 +206,7 @@ engine.on("msg", function (data) {
             else if (message.startsWith("!joking4")) {
                 processJoking(channel, "!bust " + message.substring(1), jokingBust4, options);
             }
-            else if (message.startsWith("!") && _ignore.indexOf(message.split(" ")[0]) == -1) {
+            else if (message.startsWith("!")) {
                 say(channel, "I don't know that command. Use !help to view the commands I know or to submit a feature request.");
             }
         }
@@ -461,18 +474,20 @@ function processJoking(channel, message, action, options) {
 
 function getNyan() {
     if (!_nyan) {
-        var cached = JSON.parse(localStorage.getItem("nyan"));
         for (var ii = 0; ii < _games.length; ii++) {
             var current = _games[ii];
             if (current.bust >= 1000.00) {
                 _nyan = {
-                    id: current.id
+                    id: current.id,
+                    bust: current.bust
                 };
                 break;
             }
         }
+
+        var cached = JSON.parse(localStorage.getItem("nyan"));
         if (cached && cached.id == _nyan.id) {
-            _nyan = cached;
+            _nyan.time = cached.time;
         }
     }
     return _nyan;
@@ -484,7 +499,7 @@ function getNyanMessage() {
     if (nyan.time) {
         message += ". " + timeAgo(nyan.time) + ".";
     }
-    message += " https://raigames.io/game/" + nyan.id;
+    message += " Came in at " + nyan.bust + "x. https://raigames.io/game/" + nyan.id;
     return message;
 }
 
@@ -755,7 +770,7 @@ function customBust(channel, message, options) {
     message = message.substring(index).trim();
 
     /* Get the series. */
-    var match = _regex.customBust.exec(message);
+    var match = _regex.customSeriesWithSets.exec(message);
     if (!match) {
         say(channel, "Wrong format: " + message);
         return;
@@ -769,31 +784,14 @@ function customBust(channel, message, options) {
     sets = sets || 1; /* Default to 1 if sets is not specified. */
 
     /* Get the cashouts. */
-    var cashouts = [];
-    var values = series.split(":");
-    for (var ii = 0; ii < values.length; ii++) {
-        var cashout = values[ii];
-        var parsed = parseFloat(cashout);
-        if (isNaN(parsed)) {
-            if (cashout == "n" || cashout == "nyan") {
-                cashouts.push(1000);
-            }
-            else {
-                say(channel, "Wrong format: " + message);
-                return;
-            }
-        }
-        else if (parsed < 1) {
-            say(channel, "Please target cashouts of at least 1: " + message);
-            return;
-        }
-        else {
-            cashouts.push(parsed);
-        }
-    }
+	var cashouts = expandCustomSeries(series);
 
     /* Process request. */
-    var response = message + ": " + findCustomBust(cashouts, sets, options, true);
+	var response = "[" + collapseCustomSeries(cashouts) + "]";
+	if (sets > 1) {
+		response += "x" + sets;
+	}
+    response += ": " + findCustomBust(cashouts, sets, options, true);
 
     /* Print result. */
     say(channel, response);
@@ -998,7 +996,7 @@ function findPreviousBust(start, cashouts, below) {
     for (var ii = start; ii < _games.length; ii++) {
         var entry = _games[ii];
         var cashout = cashouts[found.length];
-        if ((below && entry.bust < cashout) || (!below && entry.bust >= cashout)) {
+        if ((below && entry.bust < cashout) || (!below && entry.bust >= cashout) || cashout === -1) {
             found.push(entry);
             if (found.length >= cashouts.length) {
                 return { start: ii - (cashouts.length - 1), end: ii, games: found.reverse() };
@@ -1011,6 +1009,67 @@ function findPreviousBust(start, cashouts, below) {
         }
     }
     return null;
+}
+
+function expandCustomSeries(series) {
+    var cashouts = [];
+    var values = series.split(":");
+    for (var ii = 0; ii < values.length; ii++) {
+        var text = values[ii].split("x");
+        var cashout = text[0];
+        var repeat = text.length > 1 ? parseInt(text[1]) : 1;
+        var parsed = parseFloat(cashout);
+
+        if (isNaN(parsed)) {
+            if (cashout == "n" || cashout == "nyan") {
+                parsed = 1000;
+            }
+            else if (cashout == "*") {
+                parsed = -1;
+            }
+        }
+        else if (parsed < 1) {
+            say(channel, "Please target cashouts of at least 1: " + cashout);
+            return;
+        }
+        else if (repeat < 1) {
+            say(channel, "Please target repeats of at least 1: " + repeat);
+            return;
+        }
+
+        for (var jj = 0; jj < repeat; jj++) {
+            cashouts.push(parsed);
+        }
+    }
+    return cashouts;
+}
+
+function collapseCustomSeries(series) {
+    var result = "";
+    for (var ii = 0; ii < series.length; ii++) {
+        var item = series[ii];
+        var count = 1;
+        while (series[ii + 1] === item) {
+            count++;
+            ii++;
+        }
+
+        if (item === 1000) {
+            item = "n";
+        }
+        else if (item == -1) {
+            item = "*";
+        }
+
+        if (result) {
+            result += ":";
+        }
+        result += item;
+        if (count > 1) {
+            result += "x" + count;
+        }
+    }
+    return result;
 }
 
 /*==================================
@@ -1030,7 +1089,8 @@ var _regex = {
 
     username: /^[A-Za-z0-9_\-]{3,16}$/,
 
-    customBust: /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?)(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?))*) *\](?: *x *(?<sets>[0-9]+))? *$/
+    customSeries:         /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?|\*)(?: *x *[0-9]+)?(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?|\*)(?: *x *[0-9]+)?)*) *\] *$/,
+    customSeriesWithSets: /^ *\[ *(?<series>(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?|\*)(?: *x *[0-9]+)?(?:: *?(?:[0-9]+(?:\.[0-9]{0,2})?|n(?:yan)?|\*)(?: *x *[0-9]+)?)*) *\](?: *x *(?<sets>[0-9]+))? *$/
 };
 
 /*==================================
@@ -1044,7 +1104,7 @@ var _nyan;
 
 engine.on("game_crash", function (data) {
     if (_game) {
-        var channel = "english"; /* Alert in the main channel, which is English. */
+        var channel = "spam"; /* Alert in the main channel, which is English. */
         _game.bust = data.game_crash / 100.0;
         if (_games[0].id < (_game.id - 1)) {
             /* If this is the first run in a while, this could take a few seconds.
@@ -1081,6 +1141,7 @@ engine.on("game_crash", function (data) {
         if (_game.bust >= 1000.00) {
             _nyan = {
                 id: _game.id,
+                bust: _game.bust,
                 time: utcDate()
             };
             localStorage.setItem("nyan", JSON.stringify(_nyan));
