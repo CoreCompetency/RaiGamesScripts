@@ -33,7 +33,7 @@ var _ignore = [
     "!cashout", "!stop", "!stopafterwin", "!chase.start", "!chase.stop", /* CustomizableBot. */
     "!sounds.win:on", "!sounds.win:off", "!sounds.lose:on", "!sounds.lose:off", "!sounds.mention:on", "!sounds.mention:off", /* SoundAlerts. */
     "!mute", "!pattern", "!count", /* LivS commands. */
-    //"!blck", "!blk", "!bl", "!bst",  "!bt", "!conver", "!conv", "!cv", "!c", "!scam", "!h", "!faq", "!lck", "!lic", "!lik", "!lk", "!n", "!ny", "!na", "!nn", "!nya", "!nyn", "!nan", "!med", "!prb", "!pob", "!pb", "!p", "!prfit", "!profi", "!prof", "!prft", "!prf", "!prt", "!sen", "!sn", "!s", "!w", "!wager", "!wagerd", "!wagr", "!wagrd", "!wagred", "!wd", "!wg", "!wgd", "!wger", "!wgerd", "!wgr", "!wgrd", "!wgred", "!wagered", /* Shiba commands. */
+    "!blck", "!blk", "!bl", "!bst",  "!bt", "!conver", "!conv", "!cv", "!c", "!scam", "!h", "!faq", "!lck", "!lic", "!lik", "!lk", /*"!n",*/ "!ny", "!na", "!nn", "!nya", "!nyn", "!nan", /*"!med", "!prb",*/ "!pob", "!pb", /*"!p",*/ "!prfit", "!profi", "!prof", "!prft", "!prf", "!prt", "!sen", "!sn", /*"!s",*/ "!w", "!wager", "!wagerd", "!wagr", "!wagrd", "!wagred", "!wd", "!wg", "!wgd", "!wger", "!wgerd", "!wgr", "!wgrd", "!wgred", "!wagered", /* Shiba commands. */
     "!ignore" /* General chat. */
 ];
 engine.on("msg", function (data) {
