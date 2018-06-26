@@ -499,7 +499,7 @@ function getNyanMessage() {
     if (nyan.time) {
         message += ". " + timeAgo(nyan.time) + ".";
     }
-    message += " Came in at " + nyan.bust + "x. https://raigames.io/game/" + nyan.id;
+    message += " Came in at " + nyan.bust + "x. https://nanogames.io/game/" + nyan.id;
     return message;
 }
 
@@ -1447,7 +1447,7 @@ function utcDate() {
 }
 
 function prob(cashout) {
-    /* Based on winProb here: https://raigames.io/scripts/game-logic/clib.js. */
+    /* Based on winProb here: https://nanogames.io/scripts/game-logic/clib.js. */
     return 99 / (1.01 * (parseFloat(cashout) - 0.01));
 }
 
